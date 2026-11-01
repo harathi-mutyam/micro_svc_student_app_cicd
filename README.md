@@ -42,7 +42,7 @@ chmod 400 ~/Downloads/YOUR_KEY.pem
 ssh -i ~/Downloads/YOUR_KEY.pem ubuntu@YOUR_EC2_PUBLIC_IP
 ```
 
-> If the `.pem` file is stored somewhere else, use its actual location. After connecting, subsequent terminal commands run **on Ubuntu EC2** unless marked Windows.
+
 
 ## 3. Install prerequisites on fresh Ubuntu
 

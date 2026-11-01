@@ -47,6 +47,8 @@ ssh -i ~/Downloads/YOUR_KEY.pem ubuntu@YOUR_EC2_PUBLIC_IP
 ## 3. Install prerequisites on fresh Ubuntu
 
 ```bash
+sudo hostnamectl set-hostname student-server
+exec bash
 sudo apt update
 sudo apt upgrade -y
 sudo apt install -y git curl ca-certificates python3

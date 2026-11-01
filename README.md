@@ -5,7 +5,6 @@ Separate **PHP frontend**, **FastAPI Authentication**, **Student**, **Attendance
 ## Start on an Ubuntu EC2 with Docker + Compose installed
 
 ```bash
-unzip student-microservices-complete.zip
 cd student-microservices-complete
 cp .env.example .env
 python3 -c 'import secrets; print(secrets.token_hex(32))'

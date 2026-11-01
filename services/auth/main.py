@@ -202,3 +202,42 @@ def list_student_credentials(claims=Depends(identity)):
             })
 
         return result
+@app.delete("/users/student/{student_id}")
+def delete_student_login(
+    student_id: int,
+    claims=Depends(identity)
+):
+    admin_only(claims)
+
+    with Session() as db:
+        user = db.scalar(
+            select(User).where(
+                User.student_id == student_id,
+                User.role == "student"
+            )
+        )
+
+        if not user:
+            return {
+                "student_id": student_id,
+                "message": "No student login exists"
+            }
+
+        username = user.username
+
+        # Delete encrypted password record first
+        vault = db.get(StudentPasswordVault, user.id)
+
+        if vault:
+            db.delete(vault)
+
+        # Delete Auth account
+        db.delete(user)
+
+        db.commit()
+
+        return {
+            "student_id": student_id,
+            "username": username,
+            "message": "Student login and password vault deleted"
+        }

@@ -74,10 +74,19 @@ def delete_student(
 
         # Clean up attendance and marks before deleting student.
         services = [
-            ("attendance", f"http://attendance:8000/student/{student_id}"),
-            ("marks", f"http://marks:8000/student/{student_id}")
-        ]
-
+            (
+                "attendance",
+                f"http://attendance:8000/student/{student_id}"
+            ),
+            (
+                "marks",
+                f"http://marks:8000/student/{student_id}"
+            ),
+            (
+                "auth",
+                f"http://auth:8000/users/student/{student_id}"
+            )
+        ]   
         results = {}
 
         for service_name, url in services:

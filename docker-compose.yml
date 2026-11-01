@@ -24,6 +24,7 @@ services:
       JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET}
       DEMO_ADMIN_PASSWORD: ${DEMO_ADMIN_PASSWORD:?set DEMO_ADMIN_PASSWORD}
       DEMO_STUDENT_PASSWORD: ${DEMO_STUDENT_PASSWORD:?set DEMO_STUDENT_PASSWORD}
+      PASSWORD_ENCRYPTION_KEY: ${PASSWORD_ENCRYPTION_KEY:?set PASSWORD_ENCRYPTION_KEY in .env}
     depends_on: {database: {condition: service_healthy}}
     networks: [internal]
   students:

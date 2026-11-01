@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException
 from pydantic import BaseModel
-from sqlalchemy import Integer, String, Float, select
+from sqlalchemy import Integer, String, Float, select, delete as sql_delete
 from sqlalchemy.orm import Mapped, mapped_column
 from common.core import Base, Session, initialize, identity, admin_only, own_or_admin
 
@@ -47,3 +47,17 @@ def delete(record_id:int,user=Depends(identity)):
         r=db.get(Record,record_id)
         if not r:raise HTTPException(404,'Record not found')
         db.delete(r);db.commit();return {'deleted':record_id}
+@app.delete('/student/{student_id}')
+def delete_student_marks(student_id: int, user=Depends(identity)):
+    admin_only(user)
+
+    with Session() as db:
+        result = db.execute(
+            sql_delete(Record).where(Record.student_id == student_id)
+        )
+        db.commit()
+
+        return {
+            "student_id": student_id,
+            "deleted_marks": result.rowcount
+        }

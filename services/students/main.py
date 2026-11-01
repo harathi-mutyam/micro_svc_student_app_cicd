@@ -3,6 +3,9 @@ from pydantic import BaseModel, Field
 from sqlalchemy import Integer, String, select
 from sqlalchemy.orm import Mapped, mapped_column
 from common.core import Base, Session, initialize, identity, admin_only, own_or_admin
+from fastapi import Header
+from urllib.request import Request, urlopen
+from urllib.error import HTTPError, URLError
 
 app=FastAPI(title='Student Service')
 class Student(Base):
@@ -56,9 +59,48 @@ def update_student(student_id:int,body:StudentInput,user=Depends(identity)):
         for k,v in body.model_dump().items():setattr(s,k,v)
         db.commit();return asdict(s)
 @app.delete('/{student_id}')
-def delete_student(student_id:int,user=Depends(identity)):
+def delete_student(
+    student_id: int,
+    user=Depends(identity),
+    authorization: str | None = Header(default=None)
+):
     admin_only(user)
+
     with Session() as db:
-        s=db.get(Student,student_id)
-        if not s:raise HTTPException(404,'Student not found')
-        db.delete(s);db.commit();return {'deleted':student_id}
+        student = db.get(Student, student_id)
+
+        if not student:
+            raise HTTPException(404, 'Student not found')
+
+        # Clean up attendance and marks before deleting student.
+        services = [
+            ("attendance", f"http://attendance:8000/student/{student_id}"),
+            ("marks", f"http://marks:8000/student/{student_id}")
+        ]
+
+        results = {}
+
+        for service_name, url in services:
+            request = Request(
+                url,
+                method="DELETE",
+                headers={"Authorization": authorization}
+            )
+
+            try:
+                with urlopen(request, timeout=10) as response:
+                    results[service_name] = response.status
+
+            except (HTTPError, URLError, TimeoutError) as exc:
+                raise HTTPException(
+                    status_code=502,
+                    detail=f"Failed to clean up {service_name}: {exc}"
+                )
+
+        db.delete(student)
+        db.commit()
+
+        return {
+            "deleted_student": student_id,
+            "related_records_cleanup": results
+        }

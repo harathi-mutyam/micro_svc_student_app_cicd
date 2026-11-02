@@ -389,20 +389,5 @@ docker compose up -d --build
 docker compose ps -a
 ```
 
-Check the Git diff/release notes first if database schemas or secret requirements changed. **Do not regenerate `.env` on an existing database.**
 
-## 14. Troubleshooting
-
-| Symptom | What to check |
-|---|---|
-| `CREATE: command not found` | Old or malformed `database/init.sh`; do not mount SQL syntax as shell script. |
-| Database healthy but apps crash | `docker compose logs auth students attendance marks`; database grants and credentials. |
-| `cryptography` import error | `services/common/requirements.txt` includes `cryptography`; rebuild API images. |
-| `502 Bad Gateway` | API container availability, gateway routes; sometimes `docker compose restart gateway` after recreating API containers. |
-| Wrong JSON `service` for endpoint | NGINX routing upstream mismatch; check gateway config. |
-| `Invalid username` | Use `teststudent`, not `Test Student` or an email address. |
-| `Password Status: Not available` | No encrypted vault entry exists for that user; a password hash cannot be reversed. |
-| Student deletion leaves Auth record | Make sure Auth delete endpoint and Students cleanup call actually exist in the deployed Git commit. |
-| Untracked `.bak` files | They are local backup artifacts; they do not get pushed unless explicitly added. |
-| MySQL changes ignored after `.env` edit | Initial database account passwords remain in the persisted MySQL volume; do not delete data as a first fix. |
 

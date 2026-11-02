@@ -9,7 +9,7 @@ data "aws_iam_policy_document" "cluster_assume" {
 }
 
 resource "aws_iam_role" "cluster" {
-  name               = "voting-eks-cluster-role"
+  name               = "student-eks-cluster-role"
   assume_role_policy = data.aws_iam_policy_document.cluster_assume.json
 }
 
@@ -29,7 +29,7 @@ data "aws_iam_policy_document" "node_assume" {
 }
 
 resource "aws_iam_role" "node" {
-  name               = "voting-eks-node-role"
+  name               = "student-eks-node-role"
   assume_role_policy = data.aws_iam_policy_document.node_assume.json
 }
 
@@ -59,7 +59,7 @@ data "aws_iam_policy_document" "pod_identity_assume" {
 }
 
 resource "aws_iam_role" "ebs_csi" {
-  name               = "voting-ebs-csi-role"
+  name               = "student-ebs-csi-role"
   assume_role_policy = data.aws_iam_policy_document.pod_identity_assume.json
 }
 

@@ -291,7 +291,7 @@ docker compose restart gateway
 http://your server ec2_public_ip:8080
 
 ```bash
-**Windows Git Bash — new terminal** (keep it open):
+**Windows Git Bash — new terminal** (keep it open):its an optional way
 
 
 ssh -i ~/Downloads/YOUR_KEY.pem -L 8080:127.0.0.1:8080 ubuntu@YOUR_EC2_PUBLIC_IP

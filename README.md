@@ -102,7 +102,7 @@ ls -la
 
 Expected directory: `/home/ubuntu/micro_svc_student_app_cicd`.
 
-**Check the branch and commit:**
+**Check the branch and commit: optional commands**
 
 ```bash
 git branch --show-current
@@ -110,8 +110,6 @@ git rev-parse --short HEAD
 git fetch origin
 git log -1 --oneline origin/main
 ```
-
-The owner reported `b87c1e9` as the completed cascade-deletion commit. A later commit is fine if it contains these changes; an older commit may not. Confirm against the repository owner if feature checks fail.
 
 ## 5. Verify latest feature code before running anything
 

@@ -204,16 +204,6 @@ PY
 
 Every key should report `OK`. The four DB passwords are 64-character hex strings, satisfying `database/init.sh`'s `>=32`-hex validation.
 
-**Save passwords and `PASSWORD_ENCRYPTION_KEY` securely.** Loss of the Fernet key prevents decrypting existing stored vault values. The demo password settings seed accounts only on initial creation; modifying `.env` later does **not** reset existing account passwords or MySQL user passwords.
-
-If the `auth` service does not have this field under its existing `environment:` section, the **repository must be fixed** before continuing:
-
-```yaml
-PASSWORD_ENCRYPTION_KEY: ${PASSWORD_ENCRYPTION_KEY:?set PASSWORD_ENCRYPTION_KEY in .env}
-```
-
-Do not put this setting under `database`, `gateway`, or `frontend`.
-
 ## 7. Validate configuration and initialization script
 
 ```bash

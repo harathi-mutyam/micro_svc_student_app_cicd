@@ -1,50 +1,275 @@
-name: Student CI - Build Scan Publish
+
+name: Student App CI - Validate Test Build Scan Publish
+
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
+
 permissions:
   contents: read
+
+concurrency:
+  group: student-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
+
+  # =========================================
+  # JOB 1: VALIDATE SOURCE CODE
+  # =========================================
+
   validate:
+    name: Validate Application Code
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - name: Check Python syntax
+      - name: Checkout GitHub Repository
+        uses: actions/checkout@v4
+
+      - name: Validate Python Syntax
         run: |
-          python - <<'PY'
-          import ast
+          python3 -m compileall -q services
+          echo "Python syntax validation passed"
+
+      - name: Validate Bash Scripts
+        run: |
+          bash -n database/init.sh
+
+          if [ -f scripts/deploy.sh ]; then
+            bash -n scripts/deploy.sh
+          fi
+
+          echo "Bash syntax validation passed"
+
+      - name: Validate Kubernetes YAML
+        run: |
+          python3 -m pip install --quiet pyyaml
+
+          python3 - <<'PY'
           from pathlib import Path
-          for file in Path('services').rglob('*.py'):
-              ast.parse(file.read_text(), filename=str(file))
-          print('Python syntax OK')
-          PY
-      - name: Shell and YAML validation
-        run: |
-          bash -n database/init.sh scripts/deploy.sh
-          python -m pip install --quiet pyyaml
-          python - <<'PY'
           import yaml
-          from pathlib import Path
-          for p in Path('k8s').glob('*.yaml'):
-              list(yaml.safe_load_all(p.read_text()))
-          print('Kubernetes YAML parsed')
+
+          for file in Path("k8s").rglob("*.yaml"):
+              list(yaml.safe_load_all(file.read_text()))
+              print("Validated:", file)
+
+          print("Kubernetes YAML syntax validation passed")
           PY
-  publish:
+
+      - name: Validate Dockerfiles
+        run: |
+          test -f frontend/Dockerfile
+          test -f services/auth/Dockerfile
+          test -f services/students/Dockerfile
+          test -f services/attendance/Dockerfile
+          test -f services/marks/Dockerfile
+
+          echo "All five Dockerfiles present"
+
+
+  # =========================================
+  # JOB 2: INTEGRATION TEST
+  # =========================================
+
+  integration_test:
+    name: Docker Compose Integration Test
     needs: validate
     runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Generate Temporary CI Credentials
+        run: |
+          python3 - <<'PY'
+          import secrets
+          import base64
+          from pathlib import Path
+
+          values = {
+              "MYSQL_ROOT_PASSWORD": secrets.token_hex(32),
+              "JWT_SECRET": secrets.token_hex(32),
+              "DEMO_ADMIN_PASSWORD": secrets.token_urlsafe(24),
+              "DEMO_STUDENT_PASSWORD": secrets.token_urlsafe(24),
+              "AUTH_DB_PASSWORD": secrets.token_hex(32),
+              "STUDENT_DB_PASSWORD": secrets.token_hex(32),
+              "ATTENDANCE_DB_PASSWORD": secrets.token_hex(32),
+              "MARKS_DB_PASSWORD": secrets.token_hex(32),
+              "PASSWORD_ENCRYPTION_KEY": base64.urlsafe_b64encode(
+                  secrets.token_bytes(32)
+              ).decode(),
+          }
+
+          Path(".env").write_text(
+              "".join(f"{key}={value}\n"
+                      for key, value in values.items())
+          )
+
+          Path(".env").chmod(0o600)
+
+          print("Temporary CI credentials generated")
+          PY
+
+      - name: Validate Docker Compose
+        run: |
+          docker compose config --quiet
+          echo "Docker Compose configuration passed"
+
+      - name: Start Seven Containers
+        run: |
+          docker compose up -d --build
+
+      - name: Test Four API Services and Admin Login
+        run: |
+          python3 - <<'PY'
+          import json
+          import time
+          import urllib.request
+          from pathlib import Path
+
+          base = "http://127.0.0.1:8080"
+
+          env = dict(
+              line.split("=", 1)
+              for line in Path(".env").read_text().splitlines()
+              if "=" in line and not line.startswith("#")
+          )
+
+          services = [
+              "auth",
+              "students",
+              "attendance",
+              "marks"
+          ]
+
+          # Wait up to 120 seconds for services.
+          for attempt in range(60):
+              try:
+                  for service in services:
+                      url = f"{base}/api/{service}/health"
+
+                      with urllib.request.urlopen(
+                          url, timeout=5
+                      ) as response:
+                          data = json.load(response)
+
+                      assert data.get("status") == "ok"
+                      assert data.get("service") == service
+
+                  print("PASS: All four API health checks")
+                  break
+
+              except Exception:
+                  if attempt == 59:
+                      raise
+                  time.sleep(2)
+
+          # Test Admin Login
+          payload = json.dumps({
+              "username": "admin",
+              "password": env["DEMO_ADMIN_PASSWORD"]
+          }).encode()
+
+          request = urllib.request.Request(
+              f"{base}/api/auth/login",
+              data=payload,
+              headers={
+                  "Content-Type": "application/json"
+              },
+              method="POST"
+          )
+
+          with urllib.request.urlopen(
+              request, timeout=10
+          ) as response:
+              login = json.load(response)
+
+          assert login.get("access_token")
+          assert login.get("role") == "admin"
+
+          print("PASS: Admin Login")
+
+          # Test Authenticated Students API
+          token = login["access_token"]
+
+          request = urllib.request.Request(
+              f"{base}/api/students/",
+              headers={
+                  "Authorization": f"Bearer {token}"
+              }
+          )
+
+          with urllib.request.urlopen(
+              request, timeout=10
+          ) as response:
+              students = json.load(response)
+
+          assert isinstance(students, list)
+
+          print("PASS: Students API")
+          print("ALL INTEGRATION TESTS PASSED")
+          PY
+
+      - name: Show Container Logs if Failed
+        if: failure()
+        run: |
+          docker compose ps -a
+          docker compose logs --tail=100
+
+      - name: Remove Temporary Test Environment
+        if: always()
+        run: |
+          docker compose down -v --remove-orphans
+
+
+  # =========================================
+  # JOB 3: BUILD, SCAN, PUBLISH IMAGES
+  # =========================================
+
+  publish:
+    name: Build Scan Publish - ${{ matrix.service }}
+
+    needs: integration_test
+
+    # Publish only on main branch pushes or manual runs.
+    if: >-
+      github.event_name != 'pull_request' &&
+      github.ref == 'refs/heads/main'
+
+    runs-on: ubuntu-latest
+
     strategy:
       fail-fast: false
       matrix:
-        service: [auth, students, attendance, marks, frontend]
+        service:
+          - auth
+          - students
+          - attendance
+          - marks
+          - frontend
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build local image
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Verify Docker Hub Credentials
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: |
+          test -n "$DOCKERHUB_USERNAME"
+          test -n "$DOCKERHUB_TOKEN"
+
+      - name: Build Docker Image
         uses: docker/build-push-action@v6
         with:
           context: ${{ matrix.service == 'frontend' && './frontend' || '.' }}
@@ -52,12 +277,34 @@ jobs:
           push: false
           load: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/student-${{ matrix.service }}:${{ github.sha }}
-      - name: Trivy vulnerability scan (nonblocking demo baseline)
-        uses: aquasecurity/trivy-action@0.33.1
+
+      - name: Trivy Security Scan
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ secrets.DOCKERHUB_USERNAME }}/student-${{ matrix.service }}:${{ github.sha }}
           format: table
           severity: HIGH,CRITICAL
+          vuln-type: os,library
+          ignore-unfixed: true
           exit-code: '0'
-      - name: Publish built image
-        run: docker push "${{ secrets.DOCKERHUB_USERNAME }}/student-${{ matrix.service }}:${{ github.sha }}"
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Push Docker Image
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          SERVICE: ${{ matrix.service }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker push \
+            "$DOCKERHUB_USERNAME/student-$SERVICE:$IMAGE_TAG"
+
+      - name: Image Published Successfully
+        run: |
+          echo "Published student-${{ matrix.service }}"
+          echo "Image SHA: ${{ github.sha }}"
+

@@ -2,7 +2,7 @@
 aws_region = "eu-north-1"
 
 # EKS Cluster
-cluster_name       = "voting-cluster"
+cluster_name       = "student-cluster"
 kubernetes_version = "1.34"
 
 # EC2 Public IP for administrative access

@@ -1,29 +1,29 @@
 resource "aws_eks_addon" "vpc_cni" {
-  cluster_name = aws_eks_cluster.voting.name
+  cluster_name = aws_eks_cluster.student.name
   addon_name   = "vpc-cni"
-  depends_on   = [aws_eks_node_group.voting]
+  depends_on   = [aws_eks_node_group.student]
 }
 
 resource "aws_eks_addon" "kube_proxy" {
-  cluster_name = aws_eks_cluster.voting.name
+  cluster_name = aws_eks_cluster.student.name
   addon_name   = "kube-proxy"
-  depends_on   = [aws_eks_node_group.voting]
+  depends_on   = [aws_eks_node_group.student]
 }
 
 resource "aws_eks_addon" "coredns" {
-  cluster_name = aws_eks_cluster.voting.name
+  cluster_name = aws_eks_cluster.student.name
   addon_name   = "coredns"
-  depends_on   = [aws_eks_node_group.voting]
+  depends_on   = [aws_eks_node_group.student]
 }
 
 resource "aws_eks_addon" "pod_identity" {
-  cluster_name = aws_eks_cluster.voting.name
+  cluster_name = aws_eks_cluster.student.name
   addon_name   = "eks-pod-identity-agent"
-  depends_on   = [aws_eks_node_group.voting]
+  depends_on   = [aws_eks_node_group.student]
 }
 
 resource "aws_eks_addon" "ebs_csi" {
-  cluster_name = aws_eks_cluster.voting.name
+  cluster_name = aws_eks_cluster.student.name
   addon_name   = "aws-ebs-csi-driver"
 
   pod_identity_association {

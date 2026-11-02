@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: attendance
-          image: REPLACE_DOCKERHUB_USER/student-attendance:REPLACE_IMAGE_TAG
+          image: harathi2026/student-attendance:85c3eeeaafc6
           ports:
             - {containerPort: 8000}
           env:

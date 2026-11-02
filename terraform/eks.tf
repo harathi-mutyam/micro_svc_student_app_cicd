@@ -1,4 +1,4 @@
-resource "aws_eks_cluster" "voting" {
+resource "aws_eks_cluster" "student" {
   name     = var.cluster_name
   role_arn = aws_iam_role.cluster.arn
   version  = var.kubernetes_version
@@ -18,17 +18,17 @@ resource "aws_eks_cluster" "voting" {
   depends_on = [aws_iam_role_policy_attachment.cluster]
 }
 
-resource "aws_eks_node_group" "voting" {
-  cluster_name    = aws_eks_cluster.voting.name
-  node_group_name = "voting-node-group"
+resource "aws_eks_node_group" "student" {
+  cluster_name    = aws_eks_cluster.student.name
+  node_group_name = "student-node-group"
   node_role_arn   = aws_iam_role.node.arn
   subnet_ids      = aws_subnet.public[*].id
   instance_types  = [var.node_instance_type]
   capacity_type   = "ON_DEMAND"
 
   launch_template {
-    id      = aws_launch_template.voting_nodes.id
-    version = aws_launch_template.voting_nodes.latest_version
+    id      = aws_launch_template.student_nodes.id
+    version = aws_launch_template.student_nodes.latest_version
   }
 
 

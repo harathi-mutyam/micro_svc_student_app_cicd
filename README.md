@@ -286,8 +286,11 @@ If API containers were rebuilt/recreated and the gateway still points at old ups
 docker compose restart gateway
 ```
 
-## 11. Open the web application securely
+## 11. Open the web application 
 
+http://your server ec2_public_ip:8080
+
+```bash
 **Windows Git Bash — new terminal** (keep it open):
 
 ```bash
@@ -299,7 +302,7 @@ Then open **http://localhost:8080** on Windows. The `localhost` connection is ca
 If local 8080 is occupied, use `-L 8081:127.0.0.1:8080` and open `http://localhost:8081`.
 
 **Security note:** The Compose gateway currently publishes `8080:80` (host all interfaces). Keeping inbound 8080 blocked in the EC2 Security Group limits external access; for stronger host-level isolation change the port mapping to `127.0.0.1:8080:80` if you only use SSH tunneling, then recreate the gateway.
-
+```
 ## 12. Functional test plan (use disposable demo records)
 
 ### 12.1 Admin login

@@ -1,5 +1,5 @@
-resource "aws_launch_template" "voting_nodes" {
-  name_prefix = "voting-eks-nodes-"
+resource "aws_launch_template" "student_nodes" {
+  name_prefix = "student-eks-nodes-"
 
   network_interfaces {
     associate_public_ip_address = true
@@ -20,8 +20,8 @@ resource "aws_launch_template" "voting_nodes" {
     resource_type = "instance"
 
     tags = {
-      Name    = "voting-eks-worker"
-      Project = "final-voting-cicd"
+      Name    = "student-eks-worker"
+      Project = "final-student-cicd"
     }
   }
 }

@@ -75,6 +75,8 @@ sudo apt install -y docker-ce docker-ce-cli containerd.io \
   docker-buildx-plugin docker-compose-plugin
 sudo systemctl enable --now docker
 sudo usermod -aG docker "$USER"
+exit
+ssh -i ~/Downloads/sudent_key.pem ubuntu@<ec2 instance publicip>
 ```
 
 **Log out and reconnect via SSH** to apply group membership. Be aware that membership in the `docker` group is effectively root-level access on the host.

@@ -12,7 +12,7 @@ provider "aws" {
   region = var.aws_region
   default_tags {
     tags = {
-      Project     = "final-voting-cicd"
+      Project     = "final-student-cicd"
       Environment = "demo"
       ManagedBy   = "Terraform"
     }

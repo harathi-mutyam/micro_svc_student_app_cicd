@@ -1,3 +1,4 @@
+ubuntu@student-server:~/micro_svc_student_app_cicd$ cat .github/workflows/ci.yml
 
 name: Student App CI - Validate Test Build Scan Publish
 
@@ -71,6 +72,7 @@ jobs:
 
           echo "All five Dockerfiles present"
 
+
   # =========================================
   # JOB 2: INTEGRATION TEST
   # =========================================
@@ -106,10 +108,8 @@ jobs:
           }
 
           Path(".env").write_text(
-              "".join(
-                  f"{key}={value}\n"
-                  for key, value in values.items()
-              )
+              "".join(f"{key}={value}\n"
+                      for key, value in values.items())
           )
 
           Path(".env").chmod(0o600)
@@ -149,6 +149,7 @@ jobs:
               "marks"
           ]
 
+          # Wait up to 120 seconds for services.
           for attempt in range(60):
               try:
                   for service in services:
@@ -170,6 +171,7 @@ jobs:
                       raise
                   time.sleep(2)
 
+          # Test Admin Login
           payload = json.dumps({
               "username": "admin",
               "password": env["DEMO_ADMIN_PASSWORD"]
@@ -194,6 +196,7 @@ jobs:
 
           print("PASS: Admin Login")
 
+          # Test Authenticated Students API
           token = login["access_token"]
 
           request = urllib.request.Request(
@@ -225,6 +228,7 @@ jobs:
         run: |
           docker compose down -v --remove-orphans
 
+
   # =========================================
   # JOB 3: BUILD, SCAN, PUBLISH IMAGES
   # =========================================
@@ -234,6 +238,7 @@ jobs:
 
     needs: integration_test
 
+    # Publish only on main branch pushes or manual runs.
     if: >-
       github.event_name != 'pull_request' &&
       github.ref == 'refs/heads/main'
@@ -254,10 +259,6 @@ jobs:
       - name: Checkout Source Code
         uses: actions/checkout@v4
 
-      # NEW: Generate a 12-character Git SHA tag
-      - name: Generate 12-character image tag
-        run: echo "SHORT_SHA=${GITHUB_SHA::12}" >> "$GITHUB_ENV"
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -269,7 +270,6 @@ jobs:
           test -n "$DOCKERHUB_USERNAME"
           test -n "$DOCKERHUB_TOKEN"
 
-      # UPDATED: Build using short SHA
       - name: Build Docker Image
         uses: docker/build-push-action@v6
         with:
@@ -277,13 +277,12 @@ jobs:
           file: ${{ matrix.service == 'frontend' && 'frontend/Dockerfile' || format('services/{0}/Dockerfile', matrix.service) }}
           push: false
           load: true
-          tags: ${{ vars.DOCKERHUB_USERNAME }}/student-${{ matrix.service }}:${{ env.SHORT_SHA }}
+          tags: ${{ vars.DOCKERHUB_USERNAME }}/student-${{ matrix.service }}:${{ github.sha }}
 
-      # UPDATED: Scan the short-tagged image
       - name: Trivy Security Scan
         uses: aquasecurity/trivy-action@v0.36.0
         with:
-          image-ref: ${{ vars.DOCKERHUB_USERNAME }}/student-${{ matrix.service }}:${{ env.SHORT_SHA }}
+          image-ref: ${{ vars.DOCKERHUB_USERNAME }}/student-${{ matrix.service }}:${{ github.sha }}
           format: table
           severity: HIGH,CRITICAL
           vuln-type: os,library
@@ -296,12 +295,11 @@ jobs:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # UPDATED: Push using short SHA
       - name: Push Docker Image
         env:
           DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
           SERVICE: ${{ matrix.service }}
-          IMAGE_TAG: ${{ env.SHORT_SHA }}
+          IMAGE_TAG: ${{ github.sha }}
         run: |
           docker push \
             "$DOCKERHUB_USERNAME/student-$SERVICE:$IMAGE_TAG"
@@ -309,5 +307,4 @@ jobs:
       - name: Image Published Successfully
         run: |
           echo "Published student-${{ matrix.service }}"
-          echo "Image tag: ${{ env.SHORT_SHA }}"
-
+          echo "Image SHA: ${{ github.sha }}"

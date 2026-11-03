@@ -1,3 +1,67 @@
+name: Student App CI - Validate Build Scan Publish GitOps
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: student-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate Source and Manifests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Validate Python syntax
+        run: python3 -m compileall -q services
+
+      - name: Validate all Bash scripts
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash -n database/init.sh
+          if [[ -d scripts ]]; then
+            while IFS= read -r -d '' script; do
+              bash -n "$script"
+            done < <(find scripts -type f -name '*.sh' -print0)
+          fi
+
+      - name: Validate Kubernetes YAML syntax and Kustomize
+        run: |
+          set -euo pipefail
+          python3 -m pip install --quiet pyyaml
+          python3 - <<'PY'
+          from pathlib import Path
+          import yaml
+          files = sorted(Path('k8s').rglob('*.yaml'))
+          if not files:
+              raise SystemExit('No Kubernetes YAML manifests found')
+          for path in files:
+              docs = list(yaml.safe_load_all(path.read_text()))
+              if not any(isinstance(doc, dict) for doc in docs):
+                  raise SystemExit(f'No YAML object found: {path}')
+              print('PASS:', path)
+          PY
+
+      - name: Verify Dockerfiles
+        run: |
+          set -euo pipefail
+          for service in auth students attendance marks; do
+            test -f "services/$service/Dockerfile"
+          done
+          test -f frontend/Dockerfile
 
       - name: Validate selected GitOps resources
         run: |

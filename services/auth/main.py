@@ -1,4 +1,3 @@
-from prometheus_fastapi_instrumentator import Instrumentator
 import os
 import re
 import secrets
@@ -16,7 +15,6 @@ from cryptography.fernet import Fernet
 from sqlalchemy import ForeignKey
 app = FastAPI(title='Authentication Service')
 
-Instrumentator().instrument(app).expose(app, include_in_schema=False)
 password_hash = PasswordHash.recommended()
 class User(Base):
     __tablename__ = 'users'

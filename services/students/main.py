@@ -1,4 +1,3 @@
-from prometheus_fastapi_instrumentator import Instrumentator
 from fastapi import FastAPI, Depends, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy import Integer, String, select
@@ -10,7 +9,6 @@ from urllib.error import HTTPError, URLError
 
 app=FastAPI(title='Student Service')
 
-Instrumentator().instrument(app).expose(app, include_in_schema=False)
 class Student(Base):
     __tablename__='students'
     id: Mapped[int]=mapped_column(Integer,primary_key=True,autoincrement=True)

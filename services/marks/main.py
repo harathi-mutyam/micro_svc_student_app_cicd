@@ -1,3 +1,4 @@
+from prometheus_fastapi_instrumentator import Instrumentator
 from fastapi import FastAPI, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy import Integer, String, Float, select, delete as sql_delete
@@ -5,6 +6,8 @@ from sqlalchemy.orm import Mapped, mapped_column
 from common.core import Base, Session, initialize, identity, admin_only, own_or_admin
 
 app=FastAPI(title='Mark Service')
+
+Instrumentator().instrument(app).expose(app, include_in_schema=False)
 class Record(Base):
     __tablename__='marks'
     id: Mapped[int] = mapped_column(Integer,primary_key=True)

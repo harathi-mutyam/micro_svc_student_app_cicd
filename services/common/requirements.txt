@@ -5,3 +5,4 @@ PyMySQL==1.1.1
 PyJWT==2.10.1
 pwdlib[argon2]==0.2.1
 cryptography
+prometheus-fastapi-instrumentator==8.1.0

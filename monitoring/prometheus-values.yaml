@@ -1,0 +1,49 @@
+
+# Student Management Microservices
+# Amazon EKS - Initial Monitoring Setup
+
+grafana:
+  enabled: true
+
+  service:
+    type: ClusterIP
+
+  persistence:
+    enabled: false
+
+prometheus:
+  prometheusSpec:
+    retention: 3d
+
+    # Discover ServiceMonitors across namespaces
+    serviceMonitorSelector:
+      matchLabels: null
+
+    serviceMonitorNamespaceSelector: {}
+
+    resources:
+      requests:
+        cpu: 150m
+        memory: 512Mi
+      limits:
+        memory: 2Gi
+
+alertmanager:
+  enabled: false
+
+kube-state-metrics:
+  enabled: true
+
+prometheus-node-exporter:
+  enabled: true
+
+# EKS-managed control-plane components
+kubeEtcd:
+  enabled: false
+
+kubeControllerManager:
+  enabled: false
+
+kubeScheduler:
+  enabled: false
+

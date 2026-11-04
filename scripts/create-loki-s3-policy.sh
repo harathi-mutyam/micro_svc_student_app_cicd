@@ -1,34 +1,45 @@
 #!/usr/bin/env bash
-set -e
+set -euo pipefail
 
-# Validate arguments
-if [ -z "$1" ] || [ -z "$2" ]; then
-  echo "Usage: $0 <CHUNKS_BUCKET> <RULER_BUCKET>"
-  exit 1
-fi
-
-CHUNKS_BUCKET="$1"
-RULER_BUCKET="$2"
+# --------------------------------------------------
+# Configuration
+# --------------------------------------------------
 POLICY_NAME="StudentLokiS3Policy"
 
-echo "Creating IAM policy for:"
-echo " - Chunks: $CHUNKS_BUCKET"
-echo " - Ruler:  $RULER_BUCKET"
+# --------------------------------------------------
+# Validate bucket variables
+# --------------------------------------------------
+if [[ -z "${LOKI_CHUNKS_BUCKET:-}" || -z "${LOKI_RULER_BUCKET:-}" ]]; then
+    echo "ERROR: Set both bucket environment variables."
+    echo "Example:"
+    echo 'export LOKI_CHUNKS_BUCKET="your-chunks-bucket"'
+    echo 'export LOKI_RULER_BUCKET="your-ruler-bucket"'
+    exit 1
+fi
 
-# Generate temporary policy document
-cat <<EOF > /tmp/loki-policy.json
+# --------------------------------------------------
+# Check AWS CLI
+# --------------------------------------------------
+if ! command -v aws >/dev/null 2>&1; then
+    echo "ERROR: AWS CLI is not installed."
+    exit 1
+fi
+
+# --------------------------------------------------
+# Generate IAM policy JSON
+# --------------------------------------------------
+POLICY_FILE="/tmp/student-loki-s3-policy.json"
+
+cat > "$POLICY_FILE" <<EOF
 {
   "Version": "2012-10-17",
   "Statement": [
     {
       "Effect": "Allow",
-      "Action": [
-        "s3:ListBucket",
-        "s3:GetBucketLocation"
-      ],
+      "Action": ["s3:ListBucket", "s3:GetBucketLocation"],
       "Resource": [
-        "arn:aws:s3:::${CHUNKS_BUCKET}",
-        "arn:aws:s3:::${RULER_BUCKET}"
+        "arn:aws:s3:::${LOKI_CHUNKS_BUCKET}",
+        "arn:aws:s3:::${LOKI_RULER_BUCKET}"
       ]
     },
     {
@@ -39,20 +50,27 @@ cat <<EOF > /tmp/loki-policy.json
         "s3:DeleteObject"
       ],
       "Resource": [
-        "arn:aws:s3:::${CHUNKS_BUCKET}/*",
-        "arn:aws:s3:::${RULER_BUCKET}/*"
+        "arn:aws:s3:::${LOKI_CHUNKS_BUCKET}/*",
+        "arn:aws:s3:::${LOKI_RULER_BUCKET}/*"
       ]
     }
   ]
 }
 EOF
 
-# Create policy (or skip if already created)
+echo "IAM policy document generated."
+
+# --------------------------------------------------
+# Create IAM policy
+# --------------------------------------------------
 aws iam create-policy \
-  --policy-name "$POLICY_NAME" \
-  --policy-document file:///tmp/loki-policy.json 2>/dev/null || echo "Policy '$POLICY_NAME' already exists in AWS."
+    --policy-name "$POLICY_NAME" \
+    --policy-document "file://$POLICY_FILE" \
+    2>/dev/null || true
 
+# --------------------------------------------------
 # Cleanup
-rm -f /tmp/loki-policy.json
+# --------------------------------------------------
+rm -f "$POLICY_FILE"
 
-echo "Done!"
+echo "Loki S3 IAM policy command completed."

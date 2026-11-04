@@ -1,5 +1,5 @@
 # AWS Region
-aws_region = "eu-north-1"
+aws_region = "us-east-1"
 
 # EKS Cluster
 cluster_name       = "student-cluster"

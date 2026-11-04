@@ -1,0 +1,52 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: student-microservices-alerts
+  namespace: monitoring
+  labels:
+    release: kube-prometheus-stack
+    role: alert-rules
+spec:
+  groups:
+  - name: student-app.rules
+    rules:
+
+    # Alert 1: Any student microservice Pod down / absent
+    - alert: StudentMicroserviceDown
+      expr: sum by (pod) (kube_pod_status_phase{namespace="student-app", phase="Running"}) == 0
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Student Microservice {{ $labels.pod }} is DOWN"
+        description: "Pod {{ $labels.pod }} in namespace student-app has not been in Running state for more than 1 minute."
+
+    # Alert 2: Container restarting frequently (CrashLoop / Error)
+    - alert: StudentPodFrequentRestart
+      expr: rate(kube_pod_container_status_restarts_total{namespace="student-app"}[5m]) * 60 > 1
+      for: 2m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Pod {{ $labels.pod }} is restarting frequently"
+        description: "Pod {{ $labels.pod }} (container {{ $labels.container }}) restarted more than once in the last 5 minutes."
+
+    # Alert 3: Database Pod (database-0) storage or down alert
+    - alert: MySQLDatabaseDown
+      expr: kube_pod_status_phase{namespace="student-app", pod="database-0", phase="Running"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "MySQL StatefulSet database-0 is DOWN"
+        description: "MySQL instance database-0 in namespace student-app is not Running. Microservices will experience 500 errors."
+
+    # Alert 4: Pod High Memory Usage (> 85% of working set limit/spike)
+    - alert: StudentPodHighMemory
+      expr: sum by (pod) (container_memory_working_set_bytes{namespace="student-app", pod!="database-0", container!="", container!="POD"}) > 150000000
+      for: 1m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High Memory usage on {{ $labels.pod }}"
+        description: "Microservice {{ $labels.pod }} memory usage exceeds 150MiB for more than 1 minutes."

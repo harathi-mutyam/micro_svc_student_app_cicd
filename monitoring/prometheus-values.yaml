@@ -9,8 +9,14 @@ grafana:
     type: ClusterIP
 
   persistence:
-    enabled: false
-
+    type: pvc
+    enabled: true
+    storageClassName: gp3
+    accessModes:
+      - ReadWriteOnce
+    size: 10Gi
+    finalizers:
+      - kubernetes.io/pvc-protection
 prometheus:
   prometheusSpec:
     retention: 3d
@@ -29,7 +35,15 @@ prometheus:
         memory: 2Gi
 
 alertmanager:
-  enabled: false
+  enabled: true
+  alertmanagerSpec:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 100m
+        memory: 128Mi
 
 kube-state-metrics:
   enabled: true

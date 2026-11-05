@@ -714,36 +714,50 @@ password:paste saved one here login
 
 Inside Grafana: 
 
-Select Dashboards from the left navigation.
+  1.  Select Dashboards from the left navigation.
 
-Look for the Kubernetes dashboards installed by kube-prometheus-stack.
+  2.  Look for the Kubernetes dashboards installed by kube-prometheus-stack.
 
-**Open Kubernetes / Compute Resources / Cluster**.
+  3.  **Open Kubernetes / Compute Resources / Cluster**.
 
-Review CPU utilization, memory utilization, and Pod resource usage.
+  4.  Review CPU utilization, memory utilization, and Pod resource usage.
 
-select the Namespace dropdown in dashboard and select student-app (where
+  5.  select the Namespace dropdown in dashboard and select student-app (where
 
-the namespace variable is available.)
+        the namespace variable is available.)
 
-Click on dash boards **Kubernetes / Compute Resources / Namespace (Pods)**
+Click on dash boards--> **Kubernetes / Compute Resources / Namespace (Pods)** --> 
 
 inside select namespace: **student-app (on top)**
+<img width="940" height="515" alt="image" src="https://github.com/user-attachments/assets/5a59fbef-0362-49d2-9b72-8cf5191194cc" />
+
+<img width="940" height="628" alt="image" src="https://github.com/user-attachments/assets/81ccef62-e746-42c2-bff0-2c4d17ae0ca5" />
 
 **Dashboards Kubernetes / Compute Resources / Namespace (Workloads)** --> select namespace: student-app
 
-Navigate to Memory QuotaClick on student or marks or any service
+<img width="940" height="624" alt="image" src="https://github.com/user-attachments/assets/5767ddfd-d5a6-4330-8ed7-ff7bc41dfd9b" />
+
+Navigate to Memory Quota-->Click on student or marks or any service
+<img width="940" height="632" alt="image" src="https://github.com/user-attachments/assets/5c6213bf-f7ba-4cca-b806-a474f775aebd" />
+
 
 Dashboards **Kubernetes / Compute Resources / Namespace (Workloads)** select namespace: argocd
+<img width="940" height="654" alt="image" src="https://github.com/user-attachments/assets/eba7ab66-3bc6-4884-82b3-42ffec3e3e46" />
 
 Dashboards **Kubernetes / Compute Resources / Namespace (Workloads)** select namespace: monitoring
+<img width="940" height="531" alt="image" src="https://github.com/user-attachments/assets/fbcfc1ae-dcbe-44fe-94cf-e4579b11b7b0" />
 
 #### Verify metrics directly in Grafana
-Navigate to Explore, select the Prometheus data source on right side  
+Navigate to Explore, select the Prometheus data source -->on right side  
 
---> select code and run this PromQL expression: up click on Run Query
+select code --> and run this PromQL expression: up --> click on Run Query
 
--->  Next, query your Student application Pods:
+<img width="940" height="520" alt="image" src="https://github.com/user-attachments/assets/44c02f40-ec92-4fe8-b041-9fb9d2cf58d9" />
+
+<img width="940" height="637" alt="image" src="https://github.com/user-attachments/assets/3be63e5e-c346-4635-89a6-6e4bcfb38b74" />
+
+
+Next, query your **Student application Pods**:
 
 ```bash
 kube_pod_status_phase{
@@ -751,6 +765,7 @@ kube_pod_status_phase{
   phase="Running"
 }
 ```
+<img width="940" height="638" alt="image" src="https://github.com/user-attachments/assets/6b2c2926-35e7-4e5c-b452-3df41ea218fa" />
 
 **For container CPU usage**:
 ```bash
@@ -764,6 +779,13 @@ sum by (pod) (
   )
 )
 ```
+
+<img width="940" height="598" alt="image" src="https://github.com/user-attachments/assets/605ebf58-a38b-4d5d-97de-c8689e809497" />
+
+
+<img width="940" height="512" alt="image" src="https://github.com/user-attachments/assets/3fd711a5-4a6b-4279-8a4e-e8a2b78ae8e0" />
+
+
 Delete the old Query and enter
 
 **For container memory:**
@@ -776,6 +798,12 @@ sum by (pod) (
   }
 )
 ```
+<img width="940" height="646" alt="image" src="https://github.com/user-attachments/assets/0781f9bd-9bb5-4ebd-b62b-92a792caee61" />
+<img width="940" height="651" alt="image" src="https://github.com/user-attachments/assets/a834022d-a262-42ff-8b6b-6d88af044205" />
+
+<img width="940" height="421" alt="image" src="https://github.com/user-attachments/assets/5ddb021d-22ff-4ff5-9ee8-4d7b8e94078a" />
+
+
 
 Create a Dashboard for application in Grafana in 2 ways **either manualway or through json**
 

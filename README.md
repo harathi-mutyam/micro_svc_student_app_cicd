@@ -46,33 +46,16 @@ Launch instance.
 
 ### Step 2 --- Create and Attach IAM Role to EC2
 
-1.  Open IAM → Roles → Create role.
+1.  Open **IAM → Roles → Create role**.
 
-2.  Select AWS service → EC2.
+2.  Select **AWS service → EC2**.
 
-3.  Attach policy: AdministratorAccess (standard student lab configuration).
+3.  Attach policy: **AdministratorAccess** (standard student lab configuration).
 
 4.  Name role: student-terraform-management-role.
 
-5.  Attach role to EC2: EC2 → Instances → student-server → Actions → Security → Modify IAM role → select student-terraform-management-role.
+5.  **Attach role to EC2**: **EC2 → Instances → student-server → Actions → Security → Modify IAM role** → select student-terraform-management-role.
 
-
-Open IAM → Roles → Create role.
-
-Choose AWS service → EC2.
-
-Attach permissions required for your Terraform EKS configuration :
-
-select administrator role for simple way (optional way including IAM,
-
-EC2/VPC, EKS, and any S3 state backend resources.)
-
-Name the role **student-terraform-management-role**.
-
-#### Attach IAM Role to EC2
-
-Go to EC2 → Instances → student-server → Actions → Security → Modify IAM
-role, and select the new role.
 
 #### Create a security Group
 Add In bound Rules in student-management-sg Security Group:

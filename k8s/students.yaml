@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: students
-          image: harathi2026/student-students:b253066c2ca42c1369a84d6a9d613a33fb19e6e3
+          image: harathi2026/student-students:fb466582df641b011c4460de5dfc283d94ff1453
           ports:
             - {containerPort: 8000}
           env:

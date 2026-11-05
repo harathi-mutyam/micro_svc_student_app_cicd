@@ -924,30 +924,27 @@ Verification: The dashboard title updates to "Student Microservices Overview" an
 
 #### Method 2: Import via Ready-to-Use Dashboard JSON ( Import Application Dashboard)
 
-open first server gitbash terminal 
+Import a pre-configured dashboard using the JSON model to instantly set up all panels.
 
-```bash
+1. Retrieve the Dashboard JSON
+    •	From your server terminal:
+    cat monitoring/grafana-dashboard.json
+    
+             Copy the entire terminal output.
+    
+    •	Or directly from GitHub: Navigate to https://github.com/harathi-mutyam/micro_svc_student_app_cicd/blob/main/monitoring/grafana-dashboard.json
+    in your project repository, click Raw, and copy the text.
 
- cat monitoring/grafana-dashboard.json    
+2. Import into Grafana
+    1.	In Grafana, click Dashboards in the left sidebar.
+    2.	Click New -> Import.
+    3.	Under Import via panel json, paste the copied JSON text.
 
-```
-**copy the json content**
+Click Load.  --> Click import
 
-If you want an instant dashboard with all these panels pre-arranged:
+For verification:
 
-In Grafana, click Dashboards in the left sidebar--> Click New --> Import.
-
-Under Import via panel json, paste the JSON block below: paste the content here copied from **cat monitoring/grafana-dashboard.json** this file
-
-```bash
-
- paste the content here  (copied from cat monitoring/grafana-dashboard.json ) 
-
-```
-
-Click **Load**--> Click **import**
-
-And observe it --> Go to Dash Boards--> select **Student Microservices Application Dashboard**
+go to Dash Boards-->select Student Microservices Application Dashboard--> and confirm all metric panels are streaming data.
 
 ### Step :Run Traffic Test to Observe Real-Time Spikes
 

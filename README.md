@@ -26,9 +26,8 @@
 - Replace placeholders such as `YOUR_EC2_PUBLIC_IP`, `server_public_ip` and sample CIDR values with your own values.
 
 
-### Step 1 --- Create the EC2 instance
+### Step 1 ---Launch EC2 Management Instance
 
-Step 1: Launch EC2 Management Instance
   1.    Region: eu-north-1 (Stockholm)
 
   2.    Name: student-server
@@ -69,30 +68,20 @@ Step 1: Launch EC2 Management Instance
     
 5.    **Attach role to EC2**: **EC2 → Instances → student-server → Actions → Security → Modify IAM role** → select student-terraform-management-role.
 
+### Step 3: Connect & Install CLI Tools
 
-#### Create a security Group
-Add In bound Rules in student-management-sg Security Group:
-
-| Purpose | Protocol / port | Source |
-|---|---:|---|
-| Application | Custom TCP `8080` | My IP |
-| Argo CD | Custom TCP `8081` | My IP |
-| Grafana | Custom TCP `3000` | My IP |
-| Prometheus | Custom TCP `9090` | My IP |
-| Alertmanager | Custom TCP `9093` | My IP |
-
-> **Security:** Restrict these inbound rules to your trusted IP address.`.
-
-### Connect from Git Bash
+**Connect from Git Bash**
 
 ```bash
 ssh -i ~/Downloads/student-key.pem \
 ubuntu@YOUR_EC2_PUBLIC_IP
+
 sudo hostnamectl set-hostname student-server
+
 exec bash
 ```
 
-### Install essential Ubuntu packages
+#### Install essential Ubuntu packages
 
 ```bash
 sudo apt update
@@ -108,7 +97,7 @@ git --version
 python3 --version
 ```
 
-### Install Terraform
+#### Install Terraform
 
 ```bash
 wget -O- https://apt.releases.hashicorp.com/gpg \
@@ -125,7 +114,7 @@ sudo apt install -y terraform
 terraform version
 ```
 
-### Install AWS CLI v2
+#### Install AWS CLI v2
 
 ```bash
 curl -fsSL \
@@ -137,7 +126,7 @@ aws --version
 
 ```
 
-Verify your IAM instance role:
+**Verify your IAM instance role:**
 
 ```bash
 aws sts get-caller-identity
@@ -152,7 +141,7 @@ aws configure set region eu-north-1
 aws configure get region
 ```
 
-### Install kubectl
+#### Install kubectl
 
 ```bash
 curl -fL \
@@ -164,7 +153,7 @@ kubectl version --client
 
 ```
 
-### Install Helm
+#### Install Helm
 
 ```bash
 curl -fsSLO https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
@@ -176,7 +165,7 @@ chmod 700 get-helm-3
 helm version
 ```
 
-### Clone the repository:
+#### Clone the repository:
 
 ```bash
 git clone https://github.com/harathi-mutyam/micro_svc_student_app_cicd.git
@@ -211,6 +200,12 @@ change **admin_cidr with your # EC2 Public IP** for administrative access
 Example: admin_cidr = "16.170.165.24/32"
 
 Save it
+```bash
+alternative way to change admin_cicr with sed command
+
+sed -i 's|admin_cidr = .*|admin_cidr = "YOUR_EC2_PUBLIC_IP/32"|' terraform/terraform.tfvars
+git diff terraform/terraform.tfvars
+````
 
 Before push the changes to git hub repository create a classic Token for
 
@@ -258,7 +253,7 @@ Password for 'https://harathi-mutyam@github.com': Paste your saved github token 
 git status
 ```
 
-### Step 3: Configure GitHub Actions to publish Docker images
+### Step 4: Configure GitHub Actions to publish Docker images
 
 Code available in ci.yml file
 
@@ -285,8 +280,6 @@ tokens--> name: student-microsvc-token ,Expiration : 30 days , Access Permission
 
 it in a github as a secret 
 
-**Check it in browser: open project github repository-->actions-->runner -->Build successful**
-
 **Open server gitbash terminal**
 
 
@@ -306,7 +299,6 @@ echo "${#IMAGE_TAG}"
 ```
 
 ### Create A Cluster through Terraform
-
 
 
 ```bash
@@ -354,10 +346,12 @@ aws eks describe-addon \
 
 Output must be ACTIVE
 
+Only after EKS and its EBS CSI driver are ready:
 ### Create Secrets and ConfigMaps
 
-Only after EKS and its EBS CSI driver are ready:
+### Step 5: Deploy Microservices Applications
 
+**Prepare environment variables and secrets:**
 ```bash
 cd ~/micro_svc_student_app_cicd
 
@@ -370,7 +364,7 @@ bash scripts/01-prepare-env.sh
 bash scripts/02-apply-prerequisites.sh
 ```
 
-**Verify resources:**
+**Verify Verify configuration object and secrets:**
 
 ```bash
 kubectl get secret student-secrets -n student-app
@@ -380,12 +374,11 @@ kubectl get configmaps -n student-app
 
 OutPut: You should see student-secrets (with 13 keys) and ConfigMaps mysql-init and nginx-config.
 
-### Deploy Microservices Applications
-
-Export your Docker Hub credentials and deploy all microservices in order:
+**Export your Docker Hub credentials and deploy all microservices in order:**
 
 ```bash
 # Export deployment variables
+
 export DOCKERHUB_USERNAME="harathi2026"
 ```
 
@@ -404,8 +397,11 @@ echo "Username: $DOCKERHUB_USERNAME"
 echo "Image Tag: $IMAGE_TAG"
 ```
 
+**Deploy workloads:**
+
 ```bash
 # Run deployment script
+
 bash scripts/03-deploy-in-order.sh
 ```
 
@@ -413,11 +409,10 @@ bash scripts/03-deploy-in-order.sh
 
 ```bash
 kubectl -n student-app get pods -w
+
 ```
 
-(Press Ctrl + C once database-0, auth, students, attendance, marks, 
-
-frontend, and gateway are running)
+(Press **Ctrl + C** once database-0, auth, students, attendance, marks, frontend, and gateway are **running**)
 
 ```bash
 # Check database persistent volume claim
@@ -425,14 +420,14 @@ frontend, and gateway are running)
 kubectl -n student-app get pvc
 ```
 
-Verification: data-database-0 status should be Bound.
+Verification: data-database-0 status should be **Bound**.
 
 
-### Step : Access and Test Application in Browser
+### Step 6: Access and Test Application in Browser
 
 **Start port-forwarding for the API gateway:**
 
-open one more new git bash terminal
+open new git bash terminal
 
 ```bash
 ssh -i ~/Downloads/student-key.pem ubuntu@YOUR_EC2_PUBLIC_IP
@@ -449,13 +444,13 @@ kubectl port-forward -n student-app svc/gateway 8080:80 \
 
 (Keep this terminal open and running)
 
-Retrieve admin password (in a old server Git Bash terminal):
+Retrieve the generated administrator credentials from your first server terminal:
 
 ```bash
 grep '^DEMO_ADMIN_PASSWORD='  ~/micro_svc_student_app_cicd/.env.k8s
 ```
 
-copy the password
+**copy the password**
 
 **Open browser and test the application** is running or not
 
@@ -463,14 +458,15 @@ http://<YOUR_EC2_PUBLIC_IP>:8080
 
 Username: admin
 
-Password: (Value copied from .env.k8s)
+Password: (Value copied from .env.k8s) or paste the password **copied from above**
 
 Click on login
 
 ## Phase 2 --- Argo CD GitOps deployment
 
-### Step : Install and Configure Argo CD
+### Step 1: Install and Configure Argo CD
 
+open first server gitbash terminal:
 ```bash
 # Create namespace and install Argo CD
 
@@ -483,35 +479,36 @@ kubectl apply -n argocd --server-side \
 
 ```
 
+              ```bash
+              
+              Verify: optional commands
+              
+              
+              kubectl get pods -n argocd
+              kubectl get deployments -n argocd
+              kubectl get statefulsets -n argocd
+              kubectl get services -n argocd
+              ```
 
-Verify: optional commands
 
+ **Wait for Argo CD server to be ready**
+ 
 ```bash
-kubectl get pods -n argocd
-kubectl get deployments -n argocd
-kubectl get statefulsets -n argocd
-kubectl get services -n argocd
-```
-
-```bash
-# Wait for Argo CD server to be ready
-
 kubectl rollout status deployment/argocd-server \
   -n argocd --timeout=300s
+```
+**Retrieve initial admin password**
 
-# Retrieve initial admin password
-
+```bash
 kubectl get secret argocd-initial-admin-secret -n argocd \
   -o jsonpath='{.data.password}' | base64 -d; echo
 ```
 
 Save the password
 
-### Step : Access the Argo Cd Dashboard
+### Step 2: Access the Argo Cd Dashboard UI
 
-Open another Gitbash Terminal
-
-Login through ssh
+Open one more new Gitbash Terminal
 
 ```bash
 ssh -i ~/Downloads/student-key-cicd.pem ubuntu@server_public_ip
@@ -533,11 +530,11 @@ Open Windows Browser :
 
 username : admin
 
-Password: paste argo cd initial admin password
+Password: paste argo cd initial admin password copied from above
 
 Observe it argo cd dash board created
 
-### Step :Apply Argo CD Application manifest:
+### Step 3:Apply Argo CD Application manifest:
 
 cd ~/micro_svc_student_app_cicd
 
@@ -557,7 +554,7 @@ Look for SYNC STATUS: Synced and HEALTH STATUS: Healthy.
 
 Open argo dashboard in browser and check there also.
 
-## Phase 3 --- Monitoring Student Microservices on Amazon EKS
+## Phase 3 --- Prometheus and Grafana Monitoring Student Microservices on Amazon EKS
 
 **Check memore space**
 
@@ -566,6 +563,7 @@ cd ~/micro_svc_student_app_cicd
 
 kubectl describe nodes | grep -A 8 "Allocated resources:"
 ```
+#### Step 1: Install Kube-Prometheus-Stack
 
 **Create monitoring directory and namespace**
 
@@ -604,6 +602,7 @@ cat monitoring/prometheus-values.yaml
 helm list -n monitoring
 
 ubuntu@student-server:~/micro_svc_student_app_cicd$ helm list -n monitoring
+
 NAME    NAMESPACE       REVISION        UPDATED STATUS  CHART   APP VERSION
 ```
 
@@ -647,7 +646,7 @@ purpose)
 kubectl get pvc -n monitoring
 ```
 
-Check STATUS: Bound
+Check STATUS:**Bound**
 
 ```bash
 kubectl get pods -n monitoring -l "app.kubernetes.io/name=grafana"
@@ -676,7 +675,9 @@ kubectl get events -n monitoring \
 --sort-by=.lastTimestamp
 ```
 
-If all pods are running continue this step
+If all pods are running continue next step
+
+#### Step 2: Retrieve Grafana Credentials
 
 **Get Grafana administrator password**
 
@@ -691,7 +692,7 @@ echo
 
 Save the password
 
-### Step : Access Grafana Dashbord through Browser
+##### Step 3 : Port-Forward Grafana Dashbord
 
 open one more gitbash terminal for grafana
 
@@ -710,12 +711,11 @@ svc/kube-prometheus-stack-grafana \
 Forwarding from 127.0.0.1:3000 -> 80
 Forwarding from [::1]:3000 -> 80
 ```
+##### **Verify in Browser:**
 
-**Open Grafana in Broser http://`<Server-ec2-public-ip>`{=html}:3000**
+http://<YOUR_EC2_PUBLIC_IP>:8081 in your browser. 
 
-username:admin
-
-password:paste saved one here login
+Log in with user : **admin** and the password:  **retrieved above**)
 
 #### Check your Kubernetes dashboards
 
@@ -922,167 +922,34 @@ Verification: Traffic throughput graphs show up when requests are sent through t
 
 Verification: The dashboard title updates to "Student Microservices Overview" and persists upon page refresh.
 
-#### Method 2: Import via Ready-to-Use Dashboard JSON
+#### Method 2: Import via Ready-to-Use Dashboard JSON ( Import Application Dashboard)
+
+open first server gitbash terminal 
+
+```bash
+
+ cat monitoring/grafana-dashboard.json    
+
+```
+**copy the json content**
 
 If you want an instant dashboard with all these panels pre-arranged:
 
 In Grafana, click Dashboards in the left sidebar--> Click New --> Import.
 
-Under Import via panel json, paste the JSON block below:
-
-JSON
+Under Import via panel json, paste the JSON block below: paste the content here copied from **cat monitoring/grafana-dashboard.json** this file
 
 ```bash
-{
-  "annotations": { "list": [] },
-  "editable": true,
-  "fiscalYearStartMonth": 0,
-  "graphTooltip": 1,
-  "id": null,
-  "links": [],
-  "liveNow": false,
-  "panels": [
-    {
-      "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
-      "id": 1,
-      "title": "Application Health & Resources",
-      "type": "row"
-    },
-    {
-      "datasource": { "type": "prometheus" },
-      "fieldConfig": {
-        "defaults": {
-          "color": { "mode": "thresholds" },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              { "color": "red", "value": null },
-              { "color": "green", "value": 7 }
-            ]
-          }
-        }
-      },
-      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 1 },
-      "id": 2,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "reduceOptions": { "calcs": ["lastNotNull"], "values": false }
-      },
-      "pluginVersion": "10.0.0",
-      "targets": [
-        {
-          "expr": "sum(kube_pod_status_phase{namespace=\"student-app\", phase=\"Running\"})",
-          "refId": "A"
-        }
-      ],
-      "title": "Healthy Running Pods",
-      "type": "stat"
-    },
-    {
-      "datasource": { "type": "prometheus" },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "short"
-        }
-      },
-      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 1 },
-      "id": 3,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "reduceOptions": { "calcs": ["lastNotNull"], "values": false }
-      },
-      "targets": [
-        {
-          "expr": "sum(kube_pod_container_status_restarts_total{namespace=\"student-app\"})",
-          "refId": "A"
-        }
-      ],
-      "title": "Total Pod Restarts",
-      "type": "stat"
-    },
-    {
-      "datasource": { "type": "prometheus" },
-      "fieldConfig": {
-        "defaults": {
-          "custom": { "drawStyle": "line", "lineInterpolation": "smooth" },
-          "unit": "cores"
-        }
-      },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 1 },
-      "id": 4,
-      "options": { "legend": { "displayMode": "table", "placement": "bottom" } },
-      "targets": [
-        {
-          "expr": "sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"student-app\", container!=\"\", container!=\"POD\"}[5m]))",
-          "legendFormat": "{{pod}}",
-          "refId": "A"
-        }
-      ],
-      "title": "CPU Usage per Pod",
-      "type": "timeseries"
-    },
-    {
-      "datasource": { "type": "prometheus" },
-      "fieldConfig": {
-        "defaults": {
-          "custom": { "drawStyle": "line", "lineInterpolation": "smooth" },
-          "unit": "bytes"
-        }
-      },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 9 },
-      "id": 5,
-      "options": { "legend": { "displayMode": "table", "placement": "bottom" } },
-      "targets": [
-        {
-          "expr": "sum by (pod) (container_memory_working_set_bytes{namespace=\"student-app\", container!=\"\", container!=\"POD\"})",
-          "legendFormat": "{{pod}}",
-          "refId": "A"
-        }
-      ],
-      "title": "Memory Usage (Working Set)",
-      "type": "timeseries"
-    },
-    {
-      "datasource": { "type": "prometheus" },
-      "fieldConfig": {
-        "defaults": {
-          "custom": { "drawStyle": "line", "lineInterpolation": "smooth" },
-          "unit": "binBps"
-        }
-      },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 9 },
-      "id": 6,
-      "options": { "legend": { "displayMode": "table", "placement": "bottom" } },
-      "targets": [
-        {
-          "expr": "sum by (pod) (rate(container_network_receive_bytes_total{namespace=\"student-app\"}[5m]))",
-          "legendFormat": "{{pod}} Rx",
-          "refId": "A"
-        }
-      ],
-      "title": "Network Ingress (Received)",
-      "type": "timeseries"
-    }
-  ],
-  "schemaVersion": 38,
-  "title": "Student Microservices Application Dashboard",
-  "timezone": "browser",
-  "weekStart": ""
-}
-     
+
+ paste the content here  (copied from cat monitoring/grafana-dashboard.json ) 
 
 ```
 
-Click **Load**--> Click import
+Click **Load**--> Click **import**
 
 And observe it --> Go to Dash Boards--> select **Student Microservices Application Dashboard**
 
-### Step :To observe live Spikes in Grafana
+### Step :Run Traffic Test to Observe Real-Time Spikes
 
 Open server gitbash terminal run these commands
 
@@ -1109,6 +976,7 @@ Open Grafana Dashboard in browser **http://<YOUR_EC2_PUBLIC_IP>:3000**
     1.  Network Ingress (Received): Sharp spikes will appear for gateway, auth,students, attendance, and marks.
       
     2.  CPU Usage per Pod: Microservice CPU utilization lines will spike upwards during the burst.
+    
 
 <img width="884" height="444" alt="image" src="https://github.com/user-attachments/assets/bcc03a3f-91da-4301-a202-b128162bf1ef" />
 
@@ -1117,10 +985,11 @@ Open Grafana Dashboard in browser **http://<YOUR_EC2_PUBLIC_IP>:3000**
 
 
 
-## Phase 4: Loki and Grafana Alloy
+## Phase 4: Loki (logging S3 Backend via IRSA) and Grafana Alloy
 
 Open server gitbash terminal
 
+#### Step 1: Check Node Resources & Add Helm Repository
 ```bash
 #Check memory space
 
@@ -1134,7 +1003,7 @@ helm repo add grafana https://grafana.github.io/helm-charts
 helm repo update
 
 ```
-
+### Step 2: Export Environment Variables & Create S3 Buckets
 
 ```bash
 cd ~/micro_svc_student_app_cicd
@@ -1150,7 +1019,7 @@ echo "Ruler Bucket: $LOKI_RULER_BUCKET"
 
 ```
 
-##### Create the S3 buckets
+##### Step 3: Create the S3 buckets
 
 ```bash
 aws s3api create-bucket --bucket "$LOKI_CHUNKS_BUCKET" --region "$AWS_REGION"
@@ -1174,7 +1043,7 @@ Done
 aws s3 ls | grep student-loki
 ```
 
-##### Install eksctl & Configure IAM Roles for Service Accounts (IRSA)
+#### step 4: Install eksctl & Configure IAM Roles for Service Accounts (IRSA)
 
 **Install eksctl**
 
@@ -1199,9 +1068,10 @@ eksctl utils associate-iam-oidc-provider --cluster "$CLUSTER_NAME" \
 --region "$AWS_REGION" --approve
 ```
 
-**Create the IAM Policy for S3 access**
+#### Step 5: Create the IAM Policy for S3 access
 
-      **Using this file to create a policy or run manual way**
+  **Using this file to create a policy or run manual way**
+      
 ##### Using Script file 
 ```bash
 chmod +x ./scripts/create-loki-s3-policy.sh
@@ -1249,7 +1119,7 @@ aws iam create-policy \
 
 ```
 
-##### Create the logging namespace & ServiceAccount
+#### Step 6: Create the logging namespace & ServiceAccount
 
 **Check IAM created Policy**
 
@@ -1282,7 +1152,7 @@ Verify:
 kubectl get sa loki -n logging -o yaml
 ```
 
-##### Configure and Deploy Loki with S3 Backend
+### Step 7: Configure and Deploy Loki with S3 Backend
 
 **Add the Grafana Community Helm repository**
 
@@ -1301,7 +1171,7 @@ helm repo update
   cat logging/loki-values.yaml
 
 ```
-##### Deploy Loki
+### Step 8: Deploy Loki
 
 ```bash
 helm upgrade --install loki grafana-community/loki \
@@ -1324,7 +1194,7 @@ loki-gateway-9847cdff6-dsgv9   2/2     Running   0          90s
 
 ```
 
-### Install Grafana Alloy to Ship Pod Logs
+### Step 9: Install Grafana Alloy to Ship Pod Logs
 
 **Add the official Grafana Helm repository:**
 
@@ -1338,7 +1208,7 @@ helm repo update
 ```bash
   cat logging/alloy-values.yaml
 ```
-Deploy Alloy as a DaemonSet
+### Step 10 :Deploy Alloy as a DaemonSet
 
 ```bash
 helm upgrade --install alloy grafana/alloy \
@@ -1355,29 +1225,31 @@ alloy         2         2         2       2            2           <none>       
 loki-canary   2         2         2       2            2           <none>          7m3s
 
 ```
-### Step : Connect Loki to Grafana
+### Step 11 : Connect Loki in Grafana & Query Logs
 
-Open Grafana in your web browser http://<YOUR_EC2_PUBLIC_IP>:3000
+1.  Open Grafana in your web browser http://<YOUR_EC2_PUBLIC_IP>:3000
 
-Go to **Connections** --> **Data sources** --> click **Add data source**.
+2.  Go to **Connections** --> **Data sources** --> click **Add data source**.
 
-Select Loki.
+3.  Select Loki.
 
-In the Connection URL field, enter: **http://loki-gateway.logging.svc.cluster.local/**
+4.  In the Connection URL field, enter: **http://loki-gateway.logging.svc.cluster.local/**
 
-Scroll down and click Save & test.
+5.  Scroll down and click Save & test. (You should see a green notification.Then Data source successfully connected)
 
-#### Query Application Logs in Grafana Explore
+### Step 12: Query Application Logs in Grafana Explore
 
-Navigate to Explore -->select **Loki** -->select **Code mode** --> paste the **{namespace="student-app"}** --> click on Run query
+Navigate to Explore -->select **Loki** -->select **Code mode**(switch to code mode) --> paste the **{namespace="student-app"}** --> click on Run query
 
-With Explanation:
-
-Click Explore (compass icon) in Grafana's left navigation sidebar.
-
-Select Loki from the top data source dropdown.
-
-Switch to Code mode and test your Student Microservices queries
+```bash
+          With Explanation:
+          
+          Click Explore (compass icon) in Grafana's left navigation sidebar.
+          
+          Select Loki from the top data source dropdown.
+          
+          Switch to Code mode and test your Student Microservices queries
+````
 
 **All Student Microservices Logs:**
 
@@ -1404,7 +1276,7 @@ Switch to Code mode and test your Student Microservices queries
 {namespace="student-app"} |= "error"
 ```
 
-### Step : Add a Live Logs Panel to Your Existing Dashboard
+### Step 13 : Add a Live Logs Panel to Your Existing Dashboard
 
 1. Open your **Student Microservices Application Dashboard** in Grafana.
 
@@ -1438,7 +1310,7 @@ beneath your existing CPU, RAM, and Network metrics panels.
 
 Open aws console --> open s3--> open chunks bucket-->check logs are present or not
 
-##### Generate traffic to trigger write logs
+### Step 1: Generate application traffic to trigger write logs
 
 Open server gitbash terminal
 
@@ -1455,7 +1327,7 @@ open Grafana dash board in browser-->change Refresh time to 5 seconds
 observe the logs are refreshing now
 
 
-# Inspect chunks stored in S3 through gitbahs terminal
+### Step 2: Inspect Chunks Stored in S3 
 
 **Open server gitbash Terminal**
 
@@ -1465,7 +1337,7 @@ aws s3 ls "s3://${LOKI_CHUNKS_BUCKET}/" --recursive --summarize
 
 ## Phase 6: Alertmanager Setup & Student App Alerting Rules
 
-Verify Alertmanager Is Running
+### Step 1: Verify Alertmanager Is Running
 
 ```bash
 kubectl get pods -n monitoring \
@@ -1480,7 +1352,7 @@ alertmanager-kube-prometheus-stack-alertmanager-0   2/2     Running   0
 
 ```
 
-**Create Custom Prometheus Alert Rules for student-app**
+### Step 2: Create Custom Prometheus Alert Rules for student-app
 
 Created a Kubernetes PrometheusRule Custom Resource Definition (CRD)
 
@@ -1493,13 +1365,14 @@ cat monitoring/student-app-alerts.yaml
 
 
 kubectl apply -f monitoring/student-app-alerts.yaml
+
 ```
 
-### Step : Verify the Alert Rules in Prometheus UI
+### Step 3 : Verify the Alert Rules in Prometheus UI
 
-Port-forward the Prometheus server:
+**Port-forward the Prometheus server:**
 
-Open one more git bash terminal login through ssh
+Open one new git bash terminal
 
 ```bash
 ssh -i ~/Downloads/student-key-cicd.pem ubuntu@3.80.204.112
@@ -1514,7 +1387,7 @@ kubectl port-forward -n monitoring \
 
 ```
 
-##### Access Alerts in Browser
+### Step 4: Access Alerts in Browser
 
 Open your browser **http://<YOUR_EC2_PUBLIC_IP>:9090/alerts**
 
@@ -1522,34 +1395,38 @@ Verification: Scroll down to find the group student-app.rules. You will
 
 see your 4 rules: **or search student**
 
-        1.  StudentMicroserviceDown
-        
-        2.  StudentPodFrequentRestart
-        
-        3.  MySQLDatabaseDown
-        
-        StudentPodHighMemory
+          1.  StudentMicroserviceDown
+          
+          2.  StudentPodFrequentRestart
+          
+          3.  MySQLDatabaseDown
+          
+          4.  StudentPodHighMemory
 
-Note: All rules should initially display with a green
+Note: All rules should initially display with a **green**
 
-If You you see one firing .Open Server gitbash Terminal
+If You see one firing Some alert is there.
+
+
+
 ```bash
-vim monitoring/student-app-alerts.yaml
-```
+optional procedure
+
+Open Server gitbash Terminal
+
+  vim monitoring/student-app-alerts.yaml
+
 Firing related one **time to 3 to 1**
 
 Observe apply it again
 
-```bash
+
 kubectl apply -f monitoring/student-app-alerts.yaml
+
+
+Within 1--2 minutes, all 4 rules in the Prometheus /alerts tab will transition to green INACTIVE (4).
 ```
-
-Within 1--2 minutes, all 4 rules in the Prometheus /alerts tab will
-transition to green INACTIVE (4).
-
-### Step : Access the Alertmanager Web UI
-
-**Add 9093 port in security group of ec2 instance**
+### Step 5: Access the Alertmanager Web UI
 
 Open one more gitbash
 
@@ -1563,7 +1440,6 @@ exec bash
 ```
 
 
-
 ```bash
 kubectl port-forward -n monitoring \
  svc/kube-prometheus-stack-alertmanager 9093:9093 \
@@ -1571,7 +1447,7 @@ kubectl port-forward -n monitoring \
 
 ```
 
-### Step :Access Alert manager in browser
+### Step 6:Access Alert manager in browser
 
 Open Alertmanager in Your Browser
 
@@ -1583,7 +1459,7 @@ Verification: Active alerts routed from Prometheus appear under the **Alerts** t
 
 cd micro_svc_student_app_cicd
 
-### Step : Delete Prometheus, Alertmanager, and Grafana (including Grafana PVC):
+### Step 1: Delete Prometheus, Alertmanager, and Grafana (including Grafana PVC):
 
 ```bash
 # Uninstall Helm release
@@ -1602,7 +1478,7 @@ kubectl delete -f monitoring/student-app-alerts.yaml --ignore-not-found
 kubectl delete namespace monitoring
 ```
 
-### Step : Delete Loki and Alloy Logging Components:
+### Step 2: Delete Loki and Alloy Logging Components:
 
 ```bash
 helm uninstall alloy -n logging
@@ -1611,7 +1487,7 @@ kubectl delete pvc --all -n logging
 kubectl delete namespace logging
 ```
 
-### Step : Delete Argo CD & Application Resources:
+### Step 3: Delete Argo CD & Application Resources:
 
 ```bash
 # Remove Argo CD application
@@ -1660,7 +1536,7 @@ aws iam delete-policy \
 
 ```
 
-### Step : Delete Loki IAM Service Account and Policy
+### Step 4: Delete Loki IAM Service Account and Policy
 
 **1.  Set variables**
 
@@ -1719,7 +1595,7 @@ aws iam get-policy \
 
 ```
 
-### Step : Empty and Delete the Loki S3 Buckets
+### Step 5: Empty and Delete the Loki S3 Buckets
 
 AWS S3 requires all objects and versions to be removed before a bucket
 can be deleted:
@@ -1747,7 +1623,7 @@ aws s3api delete-bucket --bucket "$LOKI_RULER_BUCKET" --region "$AWS_REGION"
 
 ```
 
-### Step: Destroy EKS Cluster through Terraform
+### Step 6: Destroy EKS Cluster through Terraform
 
 ```bash
 cd ~/micro_svc_student_app_cicd/terraform
@@ -1758,6 +1634,6 @@ terraform destroy -auto-approve
 exit
 ```
 
-### Step: Terminate ec2 instance in aws console
+### Step 7: Terminate ec2 instance in aws console
 
 Open Ec2 instance in aws console select ec2 instance terminate it

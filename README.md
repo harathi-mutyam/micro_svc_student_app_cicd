@@ -927,15 +927,22 @@ Verification: The dashboard title updates to "Student Microservices Overview" an
 Import a pre-configured dashboard using the JSON model to instantly set up all panels.
 
 1. Retrieve the Dashboard JSON
-    •	From your server terminal:
-    cat monitoring/grafana-dashboard.json
-    
-             Copy the entire terminal output.
-    
-    •	Or directly from GitHub: Navigate to https://github.com/harathi-mutyam/micro_svc_student_app_cicd/blob/main/monitoring/grafana-dashboard.json
-    in your project repository, click Raw, and copy the text.
 
-2. Import into Grafana
+   option 1: From your server terminal:
+
+    ```bash
+       cat monitoring/grafana-dashboard.json
+
+    ```
+
+    Copy the entire terminal output.
+    
+    option 2 :	Or directly from GitHub: Navigate to https://github.com/harathi-mutyam/micro_svc_student_app_cicd/blob/main/monitoring/grafana-dashboard.json
+   
+    in your project repository, click Raw, and copy the text.
+   
+
+3. Import into Grafana
     1.	In Grafana, click Dashboards in the left sidebar.
     2.	Click New -> Import.
     3.	Under Import via panel json, paste the copied JSON text.

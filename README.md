@@ -28,21 +28,34 @@
 
 ### Step 1 --- Create the EC2 instance
 
-Choose the AWS region Europe (Stockholm) --- eu-north-1, then select
-Launch instance.
+Step 1: Launch EC2 Management Instance
+  1.    Region: eu-north-1 (Stockholm)
 
-| Setting | Enter / select |
-|---|---|
-| Name | `student-server` |
-| Operating system | Ubuntu Server 24.04 LTS |
-| Architecture | 64-bit x86 |
-| Instance type | `m7i-flex.large` |
-| Key pair | `student-key-cicd.pem` (or your existing key) |
-| Root storage | 40 GiB gp3 |
-| Network | VPC with internet access |
-| Auto-assign public IP | Enable |
-| Security group | Create new: `student-management-sg` |
-| Inbound rule | SSH TCP 22, source: My IP |
+  2.    Name: student-server
+
+  3.    AMI: Ubuntu Server 24.04 LTS (64-bit x86)
+
+  4.    Instance Type: m7i-flex.large (or t3.large)
+
+  5.    Storage: 40 GiB gp3
+
+  6.    Key Pair: student-key-cicd.pem
+
+  7.    Auto-assign Public IP: Enable
+
+  8.    Security Group: **student-management-sg** with inbound rules:
+
+            .  SSH (22): My IP
+            
+            .  Application (8080): My IP
+            
+            .  Argo CD (8081): My IP
+            
+            .  Grafana (3000): My IP
+            
+            .  Prometheus (9090): My IP
+            
+            .   Alertmanager (9093): My IP
 
 ### Step 2 --- Create and Attach IAM Role to EC2
 

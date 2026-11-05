@@ -144,8 +144,11 @@ aws configure get region
 ```bash
 curl -fL "https://s3.us-west-2.amazonaws.com/amazon-eks/1.34.9/2026-07-05/bin/linux/amd64/kubectl" \
   -o kubectl
+
 chmod +x kubectl
+
 sudo mv kubectl /usr/local/bin/kubectl
+
 kubectl version --client
 ```
 
@@ -153,8 +156,11 @@ kubectl version --client
 
 ```bash
 curl -fsSLO https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+
 chmod 700 get-helm-3
+
 ./get-helm-3
+
 helm version
 ```
 
@@ -169,7 +175,7 @@ git branch --show-current
 ls -la
 ```
 
-check any syntax errors in shell scripts
+**check any syntax errors in shell scripts**
 
 ```bash
 chmod +x scripts/*.sh
@@ -178,8 +184,9 @@ bash -n "$file" || exit 1
 done
 ```
 
-change admin_cidr with your ec2 instance public ip
+**change admin_cidr with your ec2 instance public ip**
 
+```bash
 cd \~/micro_svc_student_app_cicd
 
 vim terraform/terraform.tfvars
@@ -190,19 +197,28 @@ Example: admin_cidr = "16.170.165.24/32"
 
 Save it
 
+```
 Before push the changes to git hub repository create a classic Token for
+
 you repository
 
 ### Create GitHub Personal Access Token (Classic)
 
 Open GitHub click on right side top coner on your profile
-picturesettings Devoloper settings Personal access tokens
-Tokens(classic)Click Generate new token.--\>Select Generate new token
-(classic). Enter a Note: Student-App-GitHub-ActionsSelect expiration
-(e.g. 90 days) Select REPO check box and WorkFlow checkbox Click on
-Generate Token copy the Token value and save it some where.It will use
-to push anything into your repository
 
+picture-->settings--> Devoloper settings--> Personal access tokens
+
+Tokens(classic)-->Click Generate new token.-->Select Generate new token
+
+(classic).--> Enter a Note: Student-App-GitHub-Actions-->Select expiration
+
+(e.g. 90 days)--> Select REPO check box and WorkFlow checkbox -->Click on
+
+Generate Token -->copy the Token value and save it some where.
+
+It will use to push anything into your repository
+
+open server gitbash terminal
 ```bash
 git pull origin main
 git status
@@ -211,15 +227,15 @@ git commit -m "Update terraform.tfvars file admin cicr with ec2"
 git config --global user.email  ehmutyam@example.com
 git config --global user.name harathi-mutyam
 git push origin main
-```
+
 
 enter
 
 Username for 'https://github.com': harathi-mutyam
 
-Password for 'https://harathi-mutyam@github.com':
+Password for 'https://harathi-mutyam@github.com': Paste your saved github token here
 
-```bash
+
 git status
 ```
 
@@ -227,7 +243,7 @@ git status
 
 Code available in ci.yml file
 
-create GitHub variables and secrets for Dockerhub user
+#### create GitHub variables and secrets for Dockerhub user
 
 Before pushing ci.yml, configure the following at Github Actions
 Variables and secrets
@@ -242,13 +258,18 @@ Create docker hub username as a variable
 |---|---|
 | `DOCKERHUB_USERNAME` | `harathi2026` |
 
-Steps to create a dockerhub token login to docker hub click on profile
-on right side cornerselect account settings select personal access
-tokens name: student-microsvc-token ,Expiration : 30 days , Access
-Permissions: Repo Read & Write generate a token save the token and place
+Steps to create a dockerhub token -->login to docker hub--> click on profile
+
+on right side corner-->select account settings--> select personal access
+
+tokens--> name: student-microsvc-token ,Expiration : 30 days , Access
+
+Permissions: Repo Read & Write -->generate a token -->save the token and place
+
 it in a github as a secret
 
 Check it in browser: open project github repositoryactionsrunner Build
+
 successful
 
 Open server gitbash terminal

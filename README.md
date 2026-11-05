@@ -452,7 +452,7 @@ copy the password
 
 **Open browser and test the application** is running or not
 
-http://`<YOUR_EC2_PUBLIC_IP>`{=html}:8080
+http://<YOUR_EC2_PUBLIC_IP>:8080
 
 Username: admin
 

@@ -1197,9 +1197,9 @@ chmod +x ./scripts/create-loki-s3-policy.sh
   "$LOKI_RULER_BUCKET"
 
 ```
-#### optional way using manual way
+#### optional way using manual way create a IAM Policy follow above or this way
 ```bash
-Or this way
+Or this way 
 
 cat <<EOF > /tmp/student-loki-s3-policy.json
 {

@@ -44,7 +44,18 @@ Launch instance.
 | Security group | Create new: `student-management-sg` |
 | Inbound rule | SSH TCP 22, source: My IP |
 
-### Step 2 --- Create and attach the EC2 IAM role
+### Step 2 --- Create and Attach IAM Role to EC2
+
+1.  Open IAM → Roles → Create role.
+
+2.  Select AWS service → EC2.
+
+3.  Attach policy: AdministratorAccess (standard student lab configuration).
+
+4.  Name role: student-terraform-management-role.
+
+5.  Attach role to EC2: EC2 → Instances → student-server → Actions → Security → Modify IAM role → select student-terraform-management-role.
+
 
 Open IAM → Roles → Create role.
 

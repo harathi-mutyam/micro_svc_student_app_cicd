@@ -25,15 +25,6 @@
 - Keep private keys, GitHub tokens, Docker Hub tokens and application passwords secret. Do not commit them to Git.
 - Replace placeholders such as `YOUR_EC2_PUBLIC_IP`, `server_public_ip` and sample CIDR values with your own values.
 
-## Command and Output Conventions
-
-- Run commands in the **EC2 Ubuntu terminal over SSH**, unless a step explicitly says Git Bash or browser.
-- Each command block is labelled with its language, such as `bash` or `json`.
-- Lines beginning with `#` are comments and explain the command below them.
-- Keep long-running commands such as `kubectl port-forward` running in their own terminal.
-- Use a second SSH terminal for other commands while port-forwarding is active.
-
-> **Important:** The source procedure uses `eu-north-1` for the EKS cluster setup but later sets `AWS_REGION=us-east-1` for Loki/S3. These are different regions. Keep the S3 bucket, IAM/IRSA configuration and Loki Helm values consistent with the region you actually choose. This document preserves the source procedure's values; verify them before running those commands.
 
 ### Step 1 --- Create the EC2 instance
 
@@ -60,14 +51,19 @@ Open IAM → Roles → Create role.
 Choose AWS service → EC2.
 
 Attach permissions required for your Terraform EKS configuration :
+
 select administrator role for simple way (optional way including IAM,
+
 EC2/VPC, EKS, and any S3 state backend resources.)
 
-Name the role student-terraform-management-role.
+Name the role **student-terraform-management-role**.
+
+#### Attach IAM Role to EC2
 
 Go to EC2 → Instances → student-server → Actions → Security → Modify IAM
 role, and select the new role.
 
+#### Create a security Group
 Add In bound Rules in student-management-sg Security Group:
 
 | Purpose | Protocol / port | Source |
@@ -78,7 +74,7 @@ Add In bound Rules in student-management-sg Security Group:
 | Prometheus | Custom TCP `9090` | My IP |
 | Alertmanager | Custom TCP `9093` | My IP |
 
-> **Security:** Restrict these inbound rules to your trusted IP address. Avoid exposing administration and monitoring dashboards to `0.0.0.0/0`.
+> **Security:** Restrict these inbound rules to your trusted IP address.`.
 
 ### Connect from Git Bash
 

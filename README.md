@@ -1103,6 +1103,13 @@ Open Grafana Dashboard in browser **http://<YOUR_EC2_PUBLIC_IP>:3000**
       
     2.  CPU Usage per Pod: Microservice CPU utilization lines will spike upwards during the burst.
 
+<img width="884" height="444" alt="image" src="https://github.com/user-attachments/assets/bcc03a3f-91da-4301-a202-b128162bf1ef" />
+
+
+<img width="940" height="579" alt="image" src="https://github.com/user-attachments/assets/b11f410d-1b60-43e9-afac-518dc0828f04" />
+
+
+
 ## Phase 4: Loki and Grafana Alloy
 
 Open server gitbash terminal

@@ -14,7 +14,7 @@ permissions:
 
 concurrency:
   group: student-ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
 
@@ -57,7 +57,7 @@ jobs:
             done < <(find scripts -type f -name '*.sh' -print0)
           fi
 
-      - name: Validate Kubernetes YAML syntax and Kustomize
+      - name: Validate Kubernetes YAML and GitOps resources
         run: |
           set -euo pipefail
           python3 -m pip install --quiet pyyaml
@@ -103,7 +103,7 @@ jobs:
     name: Build Scan Publish - ${{ matrix.service }}
     needs: validate
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64, student-runner]
     strategy:
       fail-fast: false
       matrix:
@@ -167,7 +167,7 @@ jobs:
     name: Update Kubernetes YAML image tags for Argo CD
     needs: publish
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64, student-runner]
     permissions:
       contents: write
     steps:

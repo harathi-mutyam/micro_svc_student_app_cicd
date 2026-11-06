@@ -1,12 +1,18 @@
+
 name: Student App CI - Validate Build Scan Publish GitOps
 
 on:
   push:
     branches:
       - main
+      - 'feature/**'
+      - 'bugfix/**'
+      - 'hotfix/**'
+
   pull_request:
     branches:
       - main
+
   workflow_dispatch:
 
 permissions:
@@ -17,12 +23,33 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+
+  # JOB 1: GITLEAKS SECRET DETECTION
+  gitleaks:
+    name: Gitleaks Secret Detection
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout complete Git history
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Scan repository for secrets
+        uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITLEAKS_ENABLE_COMMENTS: "false"
+
+  # JOB 2: SOURCE AND MANIFEST VALIDATION
   validate:
     name: Validate Source and Manifests
+    needs: gitleaks
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Validate Python syntax
         run: python3 -m compileall -q services
@@ -31,7 +58,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+
           bash -n database/init.sh
+
           if [[ -d scripts ]]; then
             while IFS= read -r -d '' script; do
               bash -n "$script"
@@ -41,57 +70,93 @@ jobs:
       - name: Validate Kubernetes YAML syntax and Kustomize
         run: |
           set -euo pipefail
+
           python3 -m pip install --quiet pyyaml
+
           python3 - <<'PY'
           from pathlib import Path
           import yaml
+
           files = sorted(Path('k8s').rglob('*.yaml'))
+
           if not files:
               raise SystemExit('No Kubernetes YAML manifests found')
+
           for path in files:
               docs = list(yaml.safe_load_all(path.read_text()))
+
               if not any(isinstance(doc, dict) for doc in docs):
                   raise SystemExit(f'No YAML object found: {path}')
+
               print('PASS:', path)
           PY
 
       - name: Verify Dockerfiles
         run: |
           set -euo pipefail
+
           for service in auth students attendance marks; do
             test -f "services/$service/Dockerfile"
           done
+
           test -f frontend/Dockerfile
 
       - name: Validate selected GitOps resources
         run: |
           set -euo pipefail
+
           test -f k8s/kustomization.yaml
+
           python3 -m pip install --quiet pyyaml
+
           python3 - <<'PY'
           from pathlib import Path
           import yaml
-          cfg = yaml.safe_load(Path('k8s/kustomization.yaml').read_text())
-          expected = {'auth.yaml', 'students.yaml', 'attendance.yaml', 'marks.yaml', 'frontend.yaml', 'gateway.yaml'}
+
+          cfg = yaml.safe_load(
+              Path('k8s/kustomization.yaml').read_text()
+          )
+
+          expected = {
+              'auth.yaml',
+              'students.yaml',
+              'attendance.yaml',
+              'marks.yaml',
+              'frontend.yaml',
+              'gateway.yaml'
+          }
+
           actual = set(cfg.get('resources', []))
+
           if actual != expected:
-              raise SystemExit(f'Unexpected GitOps resources: {sorted(actual)}; expected: {sorted(expected)}')
+              raise SystemExit(
+                  f'Unexpected GitOps resources: {sorted(actual)}; '
+                  f'expected: {sorted(expected)}'
+              )
+
           print('PASS: GitOps includes exactly six application manifests')
           PY
 
+  # JOB 3: DOCKER BUILD + TRIVY SCAN + DOCKER HUB PUSH
   publish:
     name: Build Scan Publish - ${{ matrix.service }}
     needs: validate
+
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+
+    # GitHub-hosted runner for now.
+    # Change to self-hosted after EC2 runner registration.
     runs-on: ubuntu-latest
+
     strategy:
       fail-fast: false
+      max-parallel: 1
       matrix:
         service: [auth, students, attendance, marks, frontend]
 
     steps:
       - name: Checkout source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Verify full Git SHA and Docker Hub credentials
         env:
@@ -100,9 +165,21 @@ jobs:
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
         run: |
           set -euo pipefail
-          [[ "$IMAGE_TAG" =~ ^[0-9a-f]{40}$ ]] || { echo 'ERROR: expected full 40-character SHA'; exit 1; }
-          [[ -n "$DOCKERHUB_USERNAME" ]] || { echo 'ERROR: missing DOCKERHUB_USERNAME variable'; exit 1; }
-          [[ -n "$DOCKERHUB_TOKEN" ]] || { echo 'ERROR: missing DOCKERHUB_TOKEN secret'; exit 1; }
+
+          [[ "$IMAGE_TAG" =~ ^[0-9a-f]{40}$ ]] || {
+            echo 'ERROR: expected full 40-character SHA'
+            exit 1
+          }
+
+          [[ -n "$DOCKERHUB_USERNAME" ]] || {
+            echo 'ERROR: missing DOCKERHUB_USERNAME variable'
+            exit 1
+          }
+
+          [[ -n "$DOCKERHUB_TOKEN" ]] || {
+            echo 'ERROR: missing DOCKERHUB_TOKEN secret'
+            exit 1
+          }
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -124,7 +201,7 @@ jobs:
           severity: HIGH,CRITICAL
           vuln-type: os,library
           ignore-unfixed: true
-          exit-code: '0' # Report findings, do not block demo publishing
+          exit-code: '0'
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
@@ -139,19 +216,28 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
         run: |
           set -euo pipefail
+
           docker push "$DOCKERHUB_USERNAME/student-$SERVICE:$IMAGE_TAG"
+
           echo "PUBLISHED: $DOCKERHUB_USERNAME/student-$SERVICE:$IMAGE_TAG"
 
+  # JOB 4: UPDATE GITOPS MANIFESTS
   update-gitops:
     name: Update Kubernetes YAML image tags for Argo CD
     needs: publish
+
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+
+    # GitHub-hosted runner for now.
+    # Change to self-hosted after EC2 runner registration.
     runs-on: ubuntu-latest
+
     permissions:
       contents: write
+
     steps:
       - name: Checkout main for GitOps update
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: main
           fetch-depth: 0
@@ -163,6 +249,7 @@ jobs:
           DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
         run: |
           set -euo pipefail
+
           python3 - <<'PY'
           import os
           import re
@@ -170,33 +257,78 @@ jobs:
 
           tag = os.environ['IMAGE_TAG']
           user = os.environ['DOCKERHUB_USERNAME']
+
           if not re.fullmatch(r'[0-9a-f]{40}', tag):
               raise SystemExit('Invalid full Git SHA')
+
           if not re.fullmatch(r'[a-z0-9_-]+', user):
               raise SystemExit('Invalid Docker Hub username')
 
-          for svc in ('auth', 'students', 'attendance', 'marks', 'frontend'):
+          for svc in (
+              'auth',
+              'students',
+              'attendance',
+              'marks',
+              'frontend'
+          ):
               path = Path('k8s') / f'{svc}.yaml'
               old = path.read_text()
-              pattern = rf'(?m)^([ \t]*image:[ \t]*){re.escape(user)}/student-{svc}:[^\s#]+([ \t]*(?:#.*)?)$'
-              new, count = re.subn(pattern, lambda match: f'{match.group(1)}{user}/student-{svc}:{tag}{match.group(2)}', old)
+
+              pattern = (
+                  rf'(?m)^([ \t]*image:[ \t]*)'
+                  rf'{re.escape(user)}/student-{svc}:[^\s#]+'
+                  rf'([ \t]*(?:#.*)?)$'
+              )
+
+              new, count = re.subn(
+                  pattern,
+                  lambda match:
+                      f'{match.group(1)}'
+                      f'{user}/student-{svc}:{tag}'
+                      f'{match.group(2)}',
+                  old
+              )
+
               if count != 1:
-                  raise SystemExit(f'Expected exactly one image for {svc} in {path}, found {count}')
+                  raise SystemExit(
+                      f'Expected exactly one image for {svc} '
+                      f'in {path}, found {count}'
+                  )
+
               path.write_text(new)
-              print(f'Updated {path} -> {user}/student-{svc}:{tag}')
+
+              print(
+                  f'Updated {path} -> '
+                  f'{user}/student-{svc}:{tag}'
+              )
           PY
 
       - name: Commit and push GitOps image update
         run: |
           set -euo pipefail
+
           git diff --check
-          git add k8s/auth.yaml k8s/students.yaml k8s/attendance.yaml k8s/marks.yaml k8s/frontend.yaml
+
+          git add \
+            k8s/auth.yaml \
+            k8s/students.yaml \
+            k8s/attendance.yaml \
+            k8s/marks.yaml \
+            k8s/frontend.yaml
+
           if git diff --cached --quiet; then
             echo 'No image changes required.'
             exit 0
           fi
+
           git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "chore(gitops): deploy images built from ${{ github.sha }}"
+
+          git config user.email \
+            "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git commit -m \
+            "chore(gitops): deploy images built from ${{ github.sha }}"
+
           git push origin HEAD:main
+
           echo 'GitOps manifests pushed. Argo CD will reconcile automatically if auto-sync is enabled.'

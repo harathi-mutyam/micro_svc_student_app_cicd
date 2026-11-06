@@ -1888,9 +1888,17 @@ cd ~/micro_svc_student_app_cicd/terraform
 
 terraform destroy -auto-approve
 
-exit
 ```
+### Step 7: Stop the Runner
+```bash
 
+cd ~/actions-runner
+
+sudo ./svc.sh stop
+
+exit
+
+````
 ### Step 7: Terminate ec2 instance in aws console
 
 Open Ec2 instance in aws console select ec2 instance terminate it

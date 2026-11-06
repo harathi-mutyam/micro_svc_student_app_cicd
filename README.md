@@ -8,15 +8,15 @@
 
 ## Table of Contents
 
-1. [Phase 1 – EC2 and deployment prerequisites](#phase-1--ec2-and-deployment-prerequisites)
-2. [Phase 2 – EC2 and deployment prerequisites](#phase-2-Install Docker Engine and Configure GitHub Self-Hosted Runner)
-3. [Phase 3 – EC2 and deployment prerequisites](#phase-3-Clone the Repossitory, CI/CD Pipeline, EKS Infrastructure Provisioning and Student Microservices Deployment)
-4. [Phase 4 – Argo CD GitOps deployment](#phase-4--argo-cd-gitops-deployment)
-5. [Phase 5 – Prometheus and Grafana monitoring](#phase-5--monitoring-student-microservices-on-amazon-eks)
-6. [Phase 6 – Loki and Grafana Alloy logging](#phase-6-loki-and-grafana-alloy)
-7. [Phase 7 – Verify S3 log persistence](#phase-7-verify-aws-s3-log-persistence)
-8. [Phase 8 – Alertmanager and alert rules](#phase-8-alertmanager-setup--student-app-alerting-rules)
-9. [Phase 9 – Complete cleanup and destroy](#phase-9clean-up-procedure)
+1. [Phase 1 – EC2 and Deployment Prerequisites](#phase-1-ec2-and-deployment-prerequisites)
+2. [Phase 2 – Docker Engine and GitHub Self-Hosted Runner](#phase-2-install-docker-engine-and-configure-github-self-hosted-runner)
+3. [Phase 3 – Repository, CI/CD, EKS and Microservices Deployment](#phase-3-clone-the-repossitory-cicd-pipeline-eks-infrastructure-provisioning-and-student-microservices-deployment)
+4. [Phase 4 – Argo CD GitOps Deployment](#phase-4-argo-cd-gitops-deployment)
+5. [Phase 5 – Prometheus and Grafana Monitoring](#phase-5-prometheus-and-grafana-monitoring-student-microservices-on-amazon-eks)
+6. [Phase 6 – Loki and Grafana Alloy Logging](#phase-6-loki-and-grafana-alloy)
+7. [Phase 7 – Verify AWS S3 Log Persistence](#phase-7-verify-aws-s3-log-persistence)
+8. [Phase 8 – Alertmanager and Alert Rules](#phase-8-alertmanager-setup--student-app-alerting-rules)
+9. [Phase 9 – Complete Cleanup](#phase-9clean-up-procedure)
 
 ## Before You Begin
 

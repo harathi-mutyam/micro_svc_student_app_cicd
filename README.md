@@ -290,7 +290,14 @@ git pull --ff-only origin main
 
 export DOCKERHUB_USERNAME="harathi2026"
 
+go to docker hub copy the latest image tag
+
+export IMAGE_TAG="paste the copied image tag here"
+
+or
+
 export IMAGE_TAG="$(git rev-parse HEAD)"
+
 
 echo "$IMAGE_TAG"
 

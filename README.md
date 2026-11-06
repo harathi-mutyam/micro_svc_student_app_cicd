@@ -336,13 +336,10 @@ tar xzf ./actions-runner-linux-x64-VERSION.tar.gz
 
 Replace `YOUR_TEMPORARY_TOKEN` with the temporary registration token displayed by GitHub.
 
- -    first press enter
- -    
- -   later add `student-runner` 
-
-- Use the custom runner label: `student-runner`.
-- 
-- - Accept the default work directory.
+  -   first press enter    
+  -  later add `student-runner`
+  -   Use the custom runner label: `student-runner`. 
+  -   Accept the default work directory.
 
 ### Step 4 – Install Runner as a Linux Service
 

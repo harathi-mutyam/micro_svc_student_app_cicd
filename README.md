@@ -1792,30 +1792,6 @@ kubectl delete -n argocd \
 kubectl delete namespace argocd
 ```
 
-**Delete IAM Service Accounts & Custom Policies created via eksctl:**
-
-```bash
-export AWS_REGION="us-east-1"
-export CLUSTER_NAME="student-cluster"
-export ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-
-# Delete IAM Service Account
-
-eksctl delete iamserviceaccount \
-  --cluster "$CLUSTER_NAME" \
-  --region "$AWS_REGION" \
-  --namespace logging \
-  --name loki
-
-```
-
-```bash
-# Delete IAM Policy
-
-aws iam delete-policy \
-  --policy-arn "arn:aws:iam::${ACCOUNT_ID}:policy/StudentLokiS3Policy"
-
-```
 
 ### Step 4: Delete Loki IAM Service Account and Policy
 

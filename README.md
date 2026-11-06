@@ -167,6 +167,268 @@ chmod 700 get-helm-3
 helm version
 ```
 
+
+
+## Phase 2 – Install Docker Engine and Configure GitHub Self-Hosted Runner
+
+> **Important:** Docker Engine is required because the GitHub Actions workflow builds Docker images, runs Trivy image scans, and publishes images to Docker Hub.
+>
+> The GitHub self-hosted runner runs directly on this EC2 instance.
+
+### Step 1 – Install Docker Engine
+
+Install Docker from the official Docker Ubuntu repository.
+
+**1. Install the required packages:**
+
+```
+sudo apt update
+
+sudo apt install -y ca-certificates curl
+
+sudo install -m 0755 -d /etc/apt/keyrings
+
+sudo curl -fsSL \
+  https://download.docker.com/linux/ubuntu/gpg \
+  -o /etc/apt/keyrings/docker.asc
+
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+```
+
+**2. Configure the Docker repository:**
+
+```
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+  $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+```
+
+**3. Install Docker Engine and Buildx:**
+
+```
+sudo apt update
+
+sudo apt install -y \
+  docker-ce \
+  docker-ce-cli \
+  containerd.io \
+  docker-buildx-plugin \
+  docker-compose-plugin
+```
+
+**4. Enable and start Docker:**
+
+```
+sudo systemctl enable --now docker
+```
+
+**5. Verify the Docker installation:**
+
+```
+docker --version
+
+sudo systemctl is-active docker
+
+sudo docker run hello-world
+```
+
+**Expected result:** The output should include:
+
+```
+Hello from Docker!
+```
+
+### Step 2 – Configure Docker Permissions
+
+The GitHub runner service runs under the `ubuntu` account. This account must have permission to access Docker.
+
+**1. Add the Ubuntu user to the Docker group:**
+
+```
+sudo usermod -aG docker ubuntu
+```
+
+**2. Apply the group change to the current shell:**
+
+```
+newgrp docker
+```
+
+**3. Test Docker access:**
+
+```
+docker ps
+```
+
+**4. Verify the Ubuntu user's group membership and Docker access:**
+
+```
+id ubuntu
+
+sudo -u ubuntu -H docker ps
+```
+
+An empty container list is acceptable. There must be no Docker permission error.
+
+> **Important – Docker permissions**
+>
+> - `newgrp docker` updates the group context of the current shell.
+> - It does not update an already-running systemd runner service.
+> - If Docker group membership is changed after installing the runner service, restart that service so it receives the updated group membership.
+> - **Never use** `chmod 666 /var/run/docker.sock`. This would expose the Docker socket to all local users.
+
+### Step 3 – Register GitHub Self-Hosted Runner
+
+Open the your project GitHub repository:
+
+Navigate to:
+
+**Repository → Settings → Actions → Runners → New self-hosted runner**
+
+Select:
+
+- **Operating System:** Linux
+- **Architecture:** x64
+
+GitHub displays the latest runner download, extraction, and configuration commands.
+
+> **Security warning:** Keep the runner registration token private. It is temporary and must never be committed to Git or shared publicly.
+
+**1. Create the runner directory:**
+
+```
+ubuntu@student-server:~$ cd..
+
+ls
+
+mkdir -p ~/actions-runner
+
+cd ~/actions-runner
+```
+
+**2. Download and extract the runner:**
+
+Execute the exact download and extraction commands displayed by GitHub.
+
+They will look similar to: copy those commands from browser paste it in gitbash terminal
+
+```
+curl -o actions-runner-linux-x64-VERSION.tar.gz -L GITHUB_DOWNLOAD_URL
+
+tar xzf ./actions-runner-linux-x64-VERSION.tar.gz
+```
+
+
+**3. Configure the runner:**
+
+```
+./config.sh \
+  --url https://github.com/harathi-mutyam/micro_svc_student_app_cicd \
+  --token YOUR_TEMPORARY_TOKEN \
+  --labels student-runner
+```
+
+Replace `YOUR_TEMPORARY_TOKEN` with the temporary registration token displayed by GitHub.
+
+ -    first press enter
+ -    
+ -   later add `student-runner` 
+
+- Use the custom runner label: `student-runner`.
+- 
+- - Accept the default work directory.
+
+### Step 4 – Install Runner as a Linux Service
+
+Install the runner as a systemd service so it starts automatically and remains available after an EC2 reboot.
+
+**1. Install the service:**
+
+```
+cd ~/actions-runner
+
+sudo ./svc.sh install ubuntu
+```
+
+**2. Start the service:**
+
+```
+sudo ./svc.sh start
+```
+
+**3. Check the service status:**
+
+```
+sudo ./svc.sh status
+```
+
+**4. Restart the service to ensure it receives the updated Docker group membership:**
+
+```
+sudo systemctl restart \
+  actions.runner.harathi-mutyam-micro_svc_student_app_cicd.student-runner.service
+```
+
+**5. Verify the runner service and Docker access:**
+
+```
+sudo ./svc.sh status
+
+sudo -u ubuntu -H docker ps
+```
+
+Open GitHub:
+
+**Repository → Settings → Actions → Runners**
+
+Expected status:
+
+| Setting        | Expected value                |
+| -------------- | ----------------------------- |
+| Runner name    | `student-runner`              |
+| Status         | Online / Idle                 |
+| Default labels | `self-hosted`, `Linux`, `X64` |
+| Custom label   | `student-runner`              |
+
+### Step 5 – Final Docker and Runner Verification
+
+Run the following commands on the EC2 instance:
+
+```
+echo "===== DOCKER VERSION ====="
+docker --version
+
+echo "===== DOCKER SERVICE STATUS ====="
+sudo systemctl is-active docker
+
+echo "===== UBUNTU USER GROUPS ====="
+id ubuntu
+
+echo "===== DOCKER ACCESS AS UBUNTU ====="
+sudo -u ubuntu -H docker ps
+
+echo "===== GITHUB RUNNER SERVICE STATUS ====="
+cd ~/actions-runner
+sudo ./svc.sh status
+```
+
+**Expected result:**
+
+- Docker Engine is installed and active.
+- The `ubuntu` user belongs to the `docker` group.
+- Docker commands work without permission errors.
+- The GitHub runner service is active.
+- The runner is connected to GitHub and shows `Listening for Jobs`.
+- GitHub displays the runner as **Online / Idle** with the `student-runner` label.
+
+> **Final checkpoint:** The EC2 instance is now ready to execute GitHub Actions jobs that require Docker image builds, Trivy scans, and Docker Hub publishing through the self-hosted runner.
+
+Add runner-label workflow verificationAdd runner security and cleanup guidance
+
+
+## Phase – Clone Repository and Prepare Terraform
+
 #### Clone the repository:
 
 ```bash
@@ -470,276 +732,6 @@ Username: admin
 Password: (Value copied from .env.k8s) or paste the password **copied from above**
 
 Click on login
-
-
-## Phase 2 – Install Docker Engine and Configure GitHub Self-Hosted Runner
-
-> **Important:** Docker Engine is required because the GitHub Actions workflow builds Docker images, runs Trivy image scans, and publishes images to Docker Hub.
->
-> The GitHub self-hosted runner runs directly on this EC2 instance.
-
-### Step 1 – Install Docker Engine
-
-Install Docker from the official Docker Ubuntu repository.
-
-**1. Install the required packages:**
-
-```
-sudo apt update
-
-sudo apt install -y ca-certificates curl
-
-sudo install -m 0755 -d /etc/apt/keyrings
-
-sudo curl -fsSL \
-  https://download.docker.com/linux/ubuntu/gpg \
-  -o /etc/apt/keyrings/docker.asc
-
-sudo chmod a+r /etc/apt/keyrings/docker.asc
-```
-
-**2. Configure the Docker repository:**
-
-```
-echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
-  $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
-  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-```
-
-**3. Install Docker Engine and Buildx:**
-
-```
-sudo apt update
-
-sudo apt install -y \
-  docker-ce \
-  docker-ce-cli \
-  containerd.io \
-  docker-buildx-plugin \
-  docker-compose-plugin
-```
-
-**4. Enable and start Docker:**
-
-```
-sudo systemctl enable --now docker
-```
-
-**5. Verify the Docker installation:**
-
-```
-docker --version
-
-sudo systemctl is-active docker
-
-sudo docker run hello-world
-```
-
-**Expected result:** The output should include:
-
-```
-Hello from Docker!
-```
-
-### Step 2 – Configure Docker Permissions
-
-The GitHub runner service runs under the `ubuntu` account. This account must have permission to access Docker.
-
-**1. Add the Ubuntu user to the Docker group:**
-
-```
-sudo usermod -aG docker ubuntu
-```
-
-**2. Apply the group change to the current shell:**
-
-```
-newgrp docker
-```
-
-**3. Test Docker access:**
-
-```
-docker ps
-```
-
-**4. Verify the Ubuntu user's group membership and Docker access:**
-
-```
-id ubuntu
-
-sudo -u ubuntu -H docker ps
-```
-
-An empty container list is acceptable. There must be no Docker permission error.
-
-> **Important – Docker permissions**
->
-> - `newgrp docker` updates the group context of the current shell.
-> - It does not update an already-running systemd runner service.
-> - If Docker group membership is changed after installing the runner service, restart that service so it receives the updated group membership.
-> - **Never use** `chmod 666 /var/run/docker.sock`. This would expose the Docker socket to all local users.
-
-### Step 3 – Register GitHub Self-Hosted Runner
-
-Open the your project GitHub repository:
-
-Navigate to:
-
-**Repository → Settings → Actions → Runners → New self-hosted runner**
-
-Select:
-
-- **Operating System:** Linux
-- **Architecture:** x64
-
-GitHub displays the latest runner download, extraction, and configuration commands.
-
-> **Security warning:** Keep the runner registration token private. It is temporary and must never be committed to Git or shared publicly.
-
-**1. Create the runner directory:**
-
-```
-ubuntu@student-server:~$ cd..
-
-ls
-
-mkdir -p ~/actions-runner
-
-cd ~/actions-runner
-```
-
-**2. Download and extract the runner:**
-
-Execute the exact download and extraction commands displayed by GitHub.
-
-They will look similar to: copy those commands from browser paste it in gitbash terminal
-
-```
-curl -o actions-runner-linux-x64-VERSION.tar.gz -L GITHUB_DOWNLOAD_URL
-
-tar xzf ./actions-runner-linux-x64-VERSION.tar.gz
-```
-
-
-**3. Configure the runner:**
-
-```
-./config.sh \
-  --url https://github.com/harathi-mutyam/micro_svc_student_app_cicd \
-  --token YOUR_TEMPORARY_TOKEN \
-  --labels student-runner
-```
-
-Replace `YOUR_TEMPORARY_TOKEN` with the temporary registration token displayed by GitHub.
-
- -    first press enter
- -    
- -   later add `student-runner` 
-
-- Use the custom runner label: `student-runner`.
-- 
-- - Accept the default work directory.
-
-### Step 4 – Install Runner as a Linux Service
-
-Install the runner as a systemd service so it starts automatically and remains available after an EC2 reboot.
-
-**1. Install the service:**
-
-```
-cd ~/actions-runner
-
-sudo ./svc.sh install ubuntu
-```
-
-**2. Start the service:**
-
-```
-sudo ./svc.sh start
-```
-
-**3. Check the service status:**
-
-```
-sudo ./svc.sh status
-```
-
-**4. Restart the service to ensure it receives the updated Docker group membership:**
-
-```
-sudo systemctl restart \
-  actions.runner.harathi-mutyam-micro_svc_student_app_cicd.student-runner.service
-```
-
-**5. Verify the runner service and Docker access:**
-
-```
-sudo ./svc.sh status
-
-sudo -u ubuntu -H docker ps
-```
-
-Open GitHub:
-
-**Repository → Settings → Actions → Runners**
-
-Expected status:
-
-| Setting        | Expected value                |
-| -------------- | ----------------------------- |
-| Runner name    | `student-runner`              |
-| Status         | Online / Idle                 |
-| Default labels | `self-hosted`, `Linux`, `X64` |
-| Custom label   | `student-runner`              |
-
-### Step 5 – Final Docker and Runner Verification
-
-Run the following commands on the EC2 instance:
-
-```
-echo "===== DOCKER VERSION ====="
-docker --version
-
-echo "===== DOCKER SERVICE STATUS ====="
-sudo systemctl is-active docker
-
-echo "===== UBUNTU USER GROUPS ====="
-id ubuntu
-
-echo "===== DOCKER ACCESS AS UBUNTU ====="
-sudo -u ubuntu -H docker ps
-
-echo "===== GITHUB RUNNER SERVICE STATUS ====="
-cd ~/actions-runner
-sudo ./svc.sh status
-```
-
-**Expected result:**
-
-- Docker Engine is installed and active.
-- The `ubuntu` user belongs to the `docker` group.
-- Docker commands work without permission errors.
-- The GitHub runner service is active.
-- The runner is connected to GitHub and shows `Listening for Jobs`.
-- GitHub displays the runner as **Online / Idle** with the `student-runner` label.
-
-> **Final checkpoint:** The EC2 instance is now ready to execute GitHub Actions jobs that require Docker image builds, Trivy scans, and Docker Hub publishing through the self-hosted runner.
-
-Add runner-label workflow verificationAdd runner security and cleanup guidance
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

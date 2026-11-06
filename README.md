@@ -31,7 +31,7 @@
 
 ### Step 1 ---Launch EC2 Management Instance
 
-  1.    Region: us-east-1 (Noth Verginia)
+  1.    Region: us-east-1 (North Virginia)
 
   2.    Name: student-server
 
@@ -41,7 +41,7 @@
 
   5.    Storage: 40 GiB gp3
 
-  6.    Key Pair: student-key-cicd.pem
+  6.    Key Pair: student-key-cicd.pem or your actual filename.pem
 
   7.    Auto-assign Public IP: Enable
 
@@ -990,7 +990,7 @@ Forwarding from [::1]:3000 -> 80
 ```
 ##### **Verify in Browser:**
 
-http://<YOUR_EC2_PUBLIC_IP>:8081 in your browser. 
+http://<YOUR_EC2_PUBLIC_IP>:3000 in your browser. 
 
 Log in with user : **admin** and the password:  **retrieved above**)
 

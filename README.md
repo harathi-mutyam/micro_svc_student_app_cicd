@@ -9,13 +9,14 @@
 ## Table of Contents
 
 1. [Phase 1 – EC2 and deployment prerequisites](#phase-1--ec2-and-deployment-prerequisites)
-2.  [Phase 2 – EC2 and deployment prerequisites](#phase-2-Install Docker Engine and Configure GitHub Self-Hosted Runner)
-3. [Phase 3 – Argo CD GitOps deployment](#phase-3--argo-cd-gitops-deployment)
-4. [Phase 4 – Prometheus and Grafana monitoring](#phase-4--monitoring-student-microservices-on-amazon-eks)
-5. [Phase 5 – Loki and Grafana Alloy logging](#phase-5-loki-and-grafana-alloy)
-6. [Phase 6 – Verify S3 log persistence](#phase-6-verify-aws-s3-log-persistence)
-7. [Phase 7 – Alertmanager and alert rules](#phase-7-alertmanager-setup--student-app-alerting-rules)
-8. [Phase 8 – Complete cleanup and destroy](#phase-8clean-up-procedure)
+2. [Phase 2 – EC2 and deployment prerequisites](#phase-2-Install Docker Engine and Configure GitHub Self-Hosted Runner)
+3. [Phase 3 – EC2 and deployment prerequisites](#phase-3-Clone the Repossitory, CI/CD Pipeline, EKS Infrastructure Provisioning and Student Microservices Deployment)
+4. [Phase 4 – Argo CD GitOps deployment](#phase-4--argo-cd-gitops-deployment)
+5. [Phase 5 – Prometheus and Grafana monitoring](#phase-5--monitoring-student-microservices-on-amazon-eks)
+6. [Phase 6 – Loki and Grafana Alloy logging](#phase-6-loki-and-grafana-alloy)
+7. [Phase 7 – Verify S3 log persistence](#phase-7-verify-aws-s3-log-persistence)
+8. [Phase 8 – Alertmanager and alert rules](#phase-8-alertmanager-setup--student-app-alerting-rules)
+9. [Phase 9 – Complete cleanup and destroy](#phase-9clean-up-procedure)
 
 ## Before You Begin
 
@@ -427,7 +428,7 @@ sudo ./svc.sh status
 Add runner-label workflow verificationAdd runner security and cleanup guidance
 
 
-## Phase – Clone Repository and Prepare Terraform
+## Phase 3– Clone the Repossitory, CI/CD Pipeline, EKS Infrastructure Provisioning and Student Microservices Deployment
 
 #### Clone the repository:
 
@@ -737,7 +738,7 @@ Click on login
 
 
 
-## Phase 3 --- Argo CD GitOps deployment
+## Phase 4 --- Argo CD GitOps deployment
 
 ### Step 1: Install and Configure Argo CD
 
@@ -829,7 +830,7 @@ Look for SYNC STATUS: Synced and HEALTH STATUS: Healthy.
 
 Open argo dashboard in browser and check there also.
 
-## Phase 4 --- Prometheus and Grafana Monitoring Student Microservices on Amazon EKS
+## Phase 5 --- Prometheus and Grafana Monitoring Student Microservices on Amazon EKS
 
 **Check memore space**
 
@@ -1264,7 +1265,7 @@ Open Grafana Dashboard in browser **http://<YOUR_EC2_PUBLIC_IP>:3000**
 
 
 
-## Phase 5: Loki (logging S3 Backend via IRSA) and Grafana Alloy
+## Phase 6: Loki (logging S3 Backend via IRSA) and Grafana Alloy
 
 Open server gitbash terminal
 
@@ -1585,7 +1586,7 @@ beneath your existing CPU, RAM, and Network metrics panels.
 <img width="940" height="436" alt="image" src="https://github.com/user-attachments/assets/fba890e6-137e-4154-8e2d-7e9940697bd8" />
 
 
-## Phase 6: Verify AWS S3 Log Persistence
+## Phase 7: Verify AWS S3 Log Persistence
 
 Open aws console --> open s3--> open chunks bucket-->check logs are present or not
 
@@ -1614,7 +1615,7 @@ observe the logs are refreshing now
 aws s3 ls "s3://${LOKI_CHUNKS_BUCKET}/" --recursive --summarize
 ```
 
-## Phase 7: Alertmanager Setup & Student App Alerting Rules
+## Phase 8: Alertmanager Setup & Student App Alerting Rules
 
 ### Step 1: Verify Alertmanager Is Running
 
@@ -1734,7 +1735,7 @@ Open Alertmanager in Your Browser
 
 Verification: Active alerts routed from Prometheus appear under the **Alerts** tab with their associated labels and annotations.
 
-## Phase 8::Clean UP Procedure
+## Phase 9::Clean UP Procedure
 
 cd micro_svc_student_app_cicd
 

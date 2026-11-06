@@ -3,7 +3,7 @@
 > **End-to-end guide:** EC2 preparation → Terraform EKS provisioning → CI/CD and Docker Hub → microservices deployment → Argo CD GitOps → Prometheus/Grafana monitoring → Loki/Alloy logging → Alertmanager → complete cleanup.
 
 **Repository:** https://github.com/harathi-mutyam/micro_svc_student_app_cicd  
-**AWS region used in the EKS setup:** `eu-north-1` (Europe – Stockholm)  
+**AWS region used in the EKS setup:** `us-east-1` (US – North Virginia)  
 **Kubernetes namespace:** `student-app`
 
 ## Table of Contents
@@ -28,7 +28,7 @@
 
 ### Step 1 ---Launch EC2 Management Instance
 
-  1.    Region: eu-north-1 (Stockholm)
+  1.    Region: us-east-1 (Noth Verginia)
 
   2.    Name: student-server
 
@@ -133,7 +133,7 @@ aws sts get-caller-identity
 
 # AWS cluster Region change region according to your cluster location
 
-aws configure set region eu-north-1
+aws configure set region us-east-1
 
 ```
 
@@ -321,7 +321,7 @@ terraform apply tfplan
 #region must match claster provided region
 
 aws eks update-kubeconfig \
-  --region eu-north-1 \
+  --region us-east-1 \
   --name student-cluster
 
 kubectl get nodes -o wide
@@ -337,7 +337,7 @@ ctrl+c
 ```bash
 aws eks describe-addon \
   --cluster-name student-cluster \
-  --region eu-north-1 \
+  --region us-east-1 \
   --addon-name aws-ebs-csi-driver \
   --query 'addon.status' \
   --output text

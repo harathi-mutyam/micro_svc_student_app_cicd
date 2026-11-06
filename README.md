@@ -183,6 +183,8 @@ Install Docker from the official Docker Ubuntu repository.
 **1. Install the required packages:**
 
 ```
+cd ~
+
 sudo apt update
 
 sudo apt install -y ca-certificates curl
@@ -299,7 +301,9 @@ GitHub displays the latest runner download, extraction, and configuration comman
 **1. Create the runner directory:**
 
 ```
-ubuntu@student-server:~$ cd..
+ubuntu@student-server:~$
+
+cd ~
 
 ls
 

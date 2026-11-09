@@ -6,7 +6,7 @@ cluster_name       = "student-cluster"
 kubernetes_version = "1.34"
 
 # EC2 Public IP for administrative access
-admin_cidr = "18.234.146.64/32"
+admin_cidr = "52.204.194.144/32"
 
 # EKS Worker Nodes (example values)
 node_instance_type = "c7i-flex.large"

@@ -1963,8 +1963,23 @@ aws s3api delete-bucket --bucket "$LOKI_RULER_BUCKET" --region "$AWS_REGION"
 
 
 ```
+#### Step 6: Uninstall Ingress-NGINX Controller
+ 
+```bash
+# Uninstall Ingress-NGINX Helm release
+helm uninstall ingress-nginx -n ingress-nginx
+```
 
-### Step 6: Destroy EKS Cluster through Terraform
+```bash
+# Delete Ingress-NGINX namespace
+kubectl delete namespace ingress-nginx
+
+helm list -n ingress-nginx
+
+kubectl get namespace ingress-nginx
+
+```
+### Step 7: Destroy EKS Cluster through Terraform
 
 ```bash
 cd ~/micro_svc_student_app_cicd/terraform
@@ -1973,7 +1988,7 @@ cd ~/micro_svc_student_app_cicd/terraform
 terraform destroy -auto-approve
 
 ```
-### Step 7: Stop the Runner
+### Step 8: Stop the Runner
 ```bash
 
 cd ~/actions-runner
@@ -1983,6 +1998,6 @@ sudo ./svc.sh stop
 exit
 
 ````
-### Step 7: Terminate ec2 instance in aws console
+### Step 9: Terminate ec2 instance in aws console
 
 Open Ec2 instance in aws console select ec2 instance terminate it

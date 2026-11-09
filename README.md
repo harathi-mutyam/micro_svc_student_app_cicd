@@ -1629,7 +1629,7 @@ Navigate to Explore -->select **Loki** -->select **Code mode**(switch to code mo
 
 1. Open your **Student Microservices Application Dashboard** in Grafana.
 
-2. Click **Add --> Visualization** (top toolbar).
+2. Click Edit--> **Add --> Visualization** (top toolbar).
 
 3. Select data source **Loki**.
 

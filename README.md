@@ -49,7 +49,7 @@
 
             .  SSH (22): My IP
             
-            .  Application (8080): My IP
+            .  Application (8080): My IP   remove it later
             
             .  Argo CD (8081): My IP
             
@@ -694,28 +694,36 @@ kubectl -n student-app get pvc
 ```
 
 Verification: data-database-0 status should be **Bound**.
+### Step 6: Install Ingress-NGINX Controller & Expose Gateway via Ingress
+1. Install Ingress-NGINX using Helm:
+
+Bash
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+helm repo update
+
+helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
+  --namespace ingress-nginx \
+  --create-namespace \
+  --set controller.service.type=LoadBalancer
+
+2. Wait for the external AWS Load Balancer URL:
+
+Bash
+kubectl get svc -n ingress-nginx ingress-nginx-controller -w
+(Press Ctrl + C)
+
+Apply and verify the Ingress resource:
+
+Bash
+kubectl apply -f ~/micro_svc_student_app_cicd/k8s/ingress.yaml
+
+kubectl get ingress -n student-app
+
+copy external Load Balancer URL.
 
 
 ### Step 6: Access and Test Application in Browser
 
-**Start port-forwarding for the API gateway:**
-
-open new git bash terminal
-
-```bash
-ssh -i ~/Downloads/student-key.pem ubuntu@YOUR_EC2_PUBLIC_IP
-
-sudo hostnamectl set-hostname student-application-test
-
-exec bash
-```
-
-```bash
-kubectl port-forward -n student-app svc/gateway 8080:80 \
-  --address=0.0.0.0
-```
-
-(Keep this terminal open and running)
 
 Retrieve the generated administrator credentials from your first server terminal:
 
@@ -727,7 +735,7 @@ grep '^DEMO_ADMIN_PASSWORD='  ~/micro_svc_student_app_cicd/.env.k8s
 
 **Open browser and test the application** is running or not
 
-http://<YOUR_EC2_PUBLIC_IP>:8080
+http://<DNS-URL>
 
 Username: admin
 
@@ -1234,6 +1242,30 @@ go to Dash Boards-->select Student Microservices Application Dashboard--> and co
 
 Open server gitbash terminal run these commands
 
+# Get your Ingress Load Balancer address automatically
+```bash
+export INGRESS_HOST=$(kubectl get ingress student-app-ingress -n student-app -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+```
+# If running on Minikube/Kind or using IP, use:
+
+# export INGRESS_HOST=$(kubectl get ingress student-app-ingress -n student-app -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+
+```bash
+echo "Targeting Ingress: http://$INGRESS_HOST"
+
+for i in {1..200}; do
+  curl -s "http://${INGRESS_HOST}/api/auth/health" > /dev/null
+  curl -s "http://${INGRESS_HOST}/api/students/health" > /dev/null
+  curl -s "http://${INGRESS_HOST}/api/attendance/health" > /dev/null
+  curl -s "http://${INGRESS_HOST}/api/marks/health" > /dev/null
+done
+
+echo "Traffic test complete: 800 total HTTP requests sent."
+
+```
+
+
+
 ```bash
 for i in {1..200}; do
 curl -s http://127.0.0.1:8080/api/auth/health > /dev/null
@@ -1595,6 +1627,23 @@ Open aws console --> open s3--> open chunks bucket-->check logs are present or n
 
 Open server gitbash terminal
 
+# Export the Ingress host URL if not already exported
+```bash
+export INGRESS_HOST=$(kubectl get ingress student-app-ingress -n student-app -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+```
+
+# Generate application traffic through the Ingress controller
+```bash
+for i in {1..30}; do
+  curl -s "http://${INGRESS_HOST}/api/auth/health" > /dev/null
+  curl -s "http://${INGRESS_HOST}/api/students/health" > /dev/null
+done
+
+echo "Traffic generated successfully through Ingress."
+
+```
+
+
 ```bash
 for i in {1..30}; do
   curl -s http://127.0.0.1:8080/api/auth/health > /dev/null
@@ -1602,6 +1651,10 @@ for i in {1..30}; do
 done
 
 ```
+
+
+
+
 
 open Grafana dash board in browser-->change Refresh time to 5 seconds
 

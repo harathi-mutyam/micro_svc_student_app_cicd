@@ -692,6 +692,7 @@ kubectl -n student-app get pvc
 ```
 
 Verification: data-database-0 status should be **Bound**.
+
 ### Step 6: Install Ingress-NGINX Controller & Expose Gateway via Ingress
 1. Add the Ingress-NGINX Helm repository
 ```bash
@@ -758,7 +759,7 @@ Also check:
 kubectl describe ingress -n student-app
 ```
 
-### Step 6: Access and Test Application in Browser
+### Access and Test Application in Browser
 
 
 Retrieve the generated administrator credentials from your first server terminal:
@@ -771,16 +772,13 @@ grep '^DEMO_ADMIN_PASSWORD='  ~/micro_svc_student_app_cicd/.env.k8s
 
 **Open browser and test the application** is running or not
 
-http://<DNS-URL>
+http://DNS ADDRESS
 
 Username: admin
 
 Password: (Value copied from .env.k8s) or paste the password **copied from above**
 
 Click on login
-
-
-
 
 
 ## Phase 4 --- Argo CD GitOps deployment

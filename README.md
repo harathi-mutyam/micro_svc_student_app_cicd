@@ -496,18 +496,6 @@ It will use to push anything into your repository
 ```bash
 git pull origin main
 
-git status
-
-
-# Create a new feature branch changes
-
-git checkout -b feature
-
-
-git branch --show-current   or git branch
-
-git status
-
 git add  terraform/terraform.tfvars
 
 git commit -m "Update terraform.tfvars file admin cidr with ec2"
@@ -516,7 +504,7 @@ git config --global user.email  ehmutyam@example.com
 
 git config --global user.name harathi-mutyam
 
-git push -u origin feature
+git push -u origin main
 
 enter
 
@@ -528,30 +516,6 @@ git status
 
 ```
 
-### Create a Pull Request
-
-1.  Open your GitHub repository.
-
-2.  Select Compare & pull request.
-
-3.  Base branch: main.
-
-4.  Compare branch: feature.
-
-5.  Click Create pull request.
-
-6.  Review and merge the pull request into main.
-
-open gitbash terminal
-
-After merging, update your local main branch:
-```bash
-
-git checkout main
-
-git pull origin main
-
-```
 
 ### Step 4: Configure GitHub Actions to publish Docker images
 

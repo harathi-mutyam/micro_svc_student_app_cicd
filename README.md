@@ -624,7 +624,10 @@ Only after EKS and its EBS CSI driver are ready:
 
 **Prepare environment variables and secrets:**
 ```bash
-cd ~/micro_svc_student_app_cicd
+
+# working directory must be micro_svc_student_app_cicd
+
+cd ~/micro_svc_student_app_cicd   
 
 # Generate environment configuration file (.env.k8s)
 
@@ -743,7 +746,9 @@ Press **Ctrl + C** after the hostname appears.
 4. Apply your Ingress resource  ~/actions-runner/micro_svc_student_app_cicd
 
 ```bash
-kubectl apply -f ~/actions-runner/micro_svc_student_app_cicd/k8s/ingress.yaml
+cd micro_svc_student_app_cicd
+
+kubectl apply -f ~/micro_svc_student_app_cicd/k8s/ingress.yaml
 
 ```
 Verify:
@@ -1964,14 +1969,15 @@ aws s3api delete-bucket --bucket "$LOKI_RULER_BUCKET" --region "$AWS_REGION"
 
 ```
 #### Step 6: Uninstall Ingress-NGINX Controller
- 
+
+1.  **Uninstall Ingress-NGINX Helm release**
 ```bash
-# Uninstall Ingress-NGINX Helm release
+
 helm uninstall ingress-nginx -n ingress-nginx
 ```
-
+2.  **Delete Ingress-NGINX namespace**
 ```bash
-# Delete Ingress-NGINX namespace
+
 kubectl delete namespace ingress-nginx
 
 helm list -n ingress-nginx

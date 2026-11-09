@@ -4,6 +4,7 @@ metadata:
   name: gateway
   namespace: student-app
 spec:
+  type: LoadBalancer    # <-- Changed from ClusterIP
   selector: {app: gateway}
   ports:
     - {port: 80, targetPort: 80}

@@ -530,17 +530,17 @@ git status
 
 ### Create a Pull Request
 
-Open your GitHub repository.
+1.  Open your GitHub repository.
 
-Select Compare & pull request.
+2.  Select Compare & pull request.
 
-Base branch: main.
+3.  Base branch: main.
 
-Compare branch: feature.
+4.  Compare branch: feature.
 
-Click Create pull request.
+5.  Click Create pull request.
 
-Review and merge the pull request into main.
+6.  Review and merge the pull request into main.
 
 open gitbash terminal
 

@@ -48,9 +48,7 @@
   8.    Security Group: **student-management-sg** with inbound rules:
 
             .  SSH (22): My IP
-            
-            .  Application (8080): My IP   remove it later
-            
+                       
             .  Argo CD (8081): My IP
             
             .  Grafana (3000): My IP
@@ -695,32 +693,70 @@ kubectl -n student-app get pvc
 
 Verification: data-database-0 status should be **Bound**.
 ### Step 6: Install Ingress-NGINX Controller & Expose Gateway via Ingress
-1. Install Ingress-NGINX using Helm:
-
-Bash
+1. Add the Ingress-NGINX Helm repository
+```bash
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+```
+
+Update Helm repositories:
+```bash
 helm repo update
 
-helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
-  --namespace ingress-nginx \
-  --create-namespace \
-  --set controller.service.type=LoadBalancer
+# Verify:
 
-2. Wait for the external AWS Load Balancer URL:
+helm repo list
+```bash
 
-Bash
+You should see ingress-nginx in the repository list.
+
+2. Install Ingress-NGINX controller
+
+```bash
+
+helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx --namespace ingress-nginx --create-namespace --set controller.service.type=LoadBalancer
+```
+
+Verify installation:
+
+```bash
+helm list -n ingress-nginx
+
+```
+3. Wait for AWS Load Balancer provisioning
+```bash
 kubectl get svc -n ingress-nginx ingress-nginx-controller -w
-(Press Ctrl + C)
+```
 
-Apply and verify the Ingress resource:
+Wait until EXTERNAL-IP displays an AWS hostname, for example:
 
-Bash
-kubectl apply -f ~/micro_svc_student_app_cicd/k8s/ingress.yaml
+```bash
+NAME                       TYPE           CLUSTER-IP     EXTERNAL-IP
+ingress-nginx-controller   LoadBalancer   10.x.x.x       xxxx.elb.amazonaws.com
+```
 
+Expected
+ An AWS Load Balancer hostname appears instead of <pending>.
+
+Press **Ctrl + C** after the hostname appears.
+
+4. Apply your Ingress resource  ~/actions-runner/micro_svc_student_app_cicd
+
+```bash
+kubectl apply -f ~/actions-runner/micro_svc_student_app_cicd/k8s/ingress.yaml
+
+```
+Verify:
+
+```bash
 kubectl get ingress -n student-app
-
+```
 copy external Load Balancer URL.
 
+Also check:
+
+```bash
+kubectl describe ingress -n student-app
+```
 
 ### Step 6: Access and Test Application in Browser
 
@@ -1245,35 +1281,32 @@ Open server gitbash terminal run these commands
 # Get your Ingress Load Balancer address automatically
 ```bash
 export INGRESS_HOST=$(kubectl get ingress student-app-ingress -n student-app -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+
 ```
 # If running on Minikube/Kind or using IP, use:
 
-# export INGRESS_HOST=$(kubectl get ingress student-app-ingress -n student-app -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-
 ```bash
+
 echo "Targeting Ingress: http://$INGRESS_HOST"
 
+BASE_URL="http://${INGRESS_HOST}"
+
+echo "Targeting Ingress: $BASE_URL"
+
+# Generate traffic
 for i in {1..200}; do
-  curl -s "http://${INGRESS_HOST}/api/auth/health" > /dev/null
-  curl -s "http://${INGRESS_HOST}/api/students/health" > /dev/null
-  curl -s "http://${INGRESS_HOST}/api/attendance/health" > /dev/null
-  curl -s "http://${INGRESS_HOST}/api/marks/health" > /dev/null
+  curl -fsS "$BASE_URL/api/auth/health" > /dev/null
+  curl -fsS "$BASE_URL/api/students/health" > /dev/null
+  curl -fsS "$BASE_URL/api/attendance/health" > /dev/null
+  curl -fsS "$BASE_URL/api/marks/health" > /dev/null
+
+  if (( i % 50 == 0 )); then
+    echo "Completed $((i * 4)) requests..."
+  fi
 done
 
-echo "Traffic test complete: 800 total HTTP requests sent."
+echo "Traffic test complete: 800 successful HTTP requests."
 
-```
-
-
-
-```bash
-for i in {1..200}; do
-curl -s http://127.0.0.1:8080/api/auth/health > /dev/null
-curl -s http://127.0.0.1:8080/api/students/health > /dev/null
-curl -s http://127.0.0.1:8080/api/attendance/health > /dev/null
-curl -s http://127.0.0.1:8080/api/marks/health > /dev/null
-done
-echo "Traffic test complete: 800 total HTTP requests sent."
 ```
 
 Open Grafana Dashboard in browser **http://<YOUR_EC2_PUBLIC_IP>:3000**

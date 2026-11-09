@@ -498,15 +498,25 @@ git pull origin main
 
 git status
 
+
+# Create a new feature branch changes
+
+git checkout -b feature
+
+
+git branch --show-current   or git branch
+
+git status
+
 git add  terraform/terraform.tfvars
 
-git commit -m "Update terraform.tfvars file admin cicr with ec2"
+git commit -m "Update terraform.tfvars file admin cidr with ec2"
 
 git config --global user.email  ehmutyam@example.com
 
 git config --global user.name harathi-mutyam
 
-git push origin main
+git push -u origin feature
 
 enter
 
@@ -515,6 +525,32 @@ Username for 'https://github.com': harathi-mutyam
 Password for 'https://harathi-mutyam@github.com': Paste your saved github token here
 
 git status
+
+```
+
+### Create a Pull Request
+
+Open your GitHub repository.
+
+Select Compare & pull request.
+
+Base branch: main.
+
+Compare branch: feature.
+
+Click Create pull request.
+
+Review and merge the pull request into main.
+
+open gitbash terminal
+
+After merging, update your local main branch:
+```bash
+
+git checkout main
+
+git pull origin main
+
 ```
 
 ### Step 4: Configure GitHub Actions to publish Docker images

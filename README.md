@@ -2,7 +2,7 @@
 
 > **End-to-end guide:** EC2 preparation → Terraform EKS provisioning → CI/CD and Docker Hub → microservices deployment → Argo CD GitOps → Prometheus/Grafana monitoring → Loki/Alloy logging → Alertmanager → complete cleanup.
 
-<img width="1672" height="941" alt="AWS EKS Student Microservices Architecture (1)" src="https://github.com/user-attachments/assets/88d7daf3-3f2f-417b-a7f6-3329cead215c" />
+<img width="1671" height="941" alt="Student Microservices on Amazon EKS (1)" src="https://github.com/user-attachments/assets/45393ddf-5a6d-4716-a38a-0e78e4172b0d" />
 
 
 **Repository:** https://github.com/harathi-mutyam/micro_svc_student_app_cicd  

@@ -500,10 +500,6 @@ It will use to push anything into your repository
 ```bash
 git pull origin main
 
-git add  terraform/terraform.tfvars
-
-git commit -m "Update terraform.tfvars file admin cidr with ec2"
-
 git config --global user.email  ehmutyam@example.com
 
 git config --global user.name harathi-mutyam
@@ -515,6 +511,12 @@ enter
 Username for 'https://github.com': harathi-mutyam
 
 Password for 'https://harathi-mutyam@github.com': Paste your saved github token here
+
+git add  terraform/terraform.tfvars
+
+git commit -m "Update terraform.tfvars file admin cidr with ec2"
+
+git push -u origin main
 
 git status
 

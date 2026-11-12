@@ -1188,7 +1188,7 @@ Verification: A new panel configuration screen appears with a query editor at th
   2.  On the right-hand panel settings, change the visualization type from Time series to **Stat**.
 
   3.  Under Panel options, set Title to Healthy Running Pods.
-  4.  Click Apply in the top right.
+  4.  Click save(Apply) in the top right.
 
 Verification: The panel displays a numeric count of your running pods (e.g., 7).
 
@@ -1203,7 +1203,7 @@ Verification: The panel displays a numeric count of your running pods (e.g., 7).
     3.  Under **Legend** , set the label format to {{pod}}.
     4.  Set **Title** to CPU Usage per Pod (Cores).
     5.  Under **Standard options -> Unit**, choose **Data Rate / Throughput** or type **cores**.
-    6.  Click Apply.
+    6.  Click Save(Apply).
 
 Verification: A multi-line graph displays CPU usage curves for each service.
 
@@ -1219,7 +1219,7 @@ Verification: A multi-line graph displays CPU usage curves for each service.
 
     5.  Under Standard options --> Unit, select Data (IEC) --> Bytes (IEC) or Megabytes (MiB).
 
-    6.  Click Apply.
+    6.  Click Save(Apply).
 
   Verification: Graphs show real-time memory usage (e.g.: ~120 MiB fordatabase-0).
 
@@ -1240,7 +1240,7 @@ Verification: A multi-line graph displays CPU usage curves for each service.
 5.  Legend: {{pod}} - Egress
 6.  Under Standard options -> Unit, select Data Rate -> Bytes/sec.
 7.  Set Title to Pod Network Traffic (Bytes/sec).
-8.  Click Apply.
+8.  Click Save (Apply).
 
 Verification: Traffic throughput graphs show up when requests are sent through the gateway.
 ##### Step 6: SAVE Your Dashboard
@@ -1425,7 +1425,7 @@ eksctl utils associate-iam-oidc-provider --cluster "$CLUSTER_NAME" \
 
 #### Step 5: Create the IAM Policy for S3 access
 
-  **Using this file to create a policy or run manual way**
+  **Using this file to create a policy**
       
 ##### Using Script file 
 ```bash
@@ -1436,43 +1436,7 @@ chmod +x ./scripts/create-loki-s3-policy.sh
   "$LOKI_RULER_BUCKET"
 
 ```
-#### optional way using manual way create a IAM Policy follow above or this way
-```bash
-Or this way 
 
-cat <<EOF > /tmp/student-loki-s3-policy.json
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": ["s3:ListBucket", "s3:GetBucketLocation"],
-      "Resource": [
-        "arn:aws:s3:::${LOKI_CHUNKS_BUCKET}",
-        "arn:aws:s3:::${LOKI_RULER_BUCKET}"
-      ]
-    },
-    {
-      "Effect": "Allow",
-      "Action": [
-        "s3:GetObject",
-        "s3:PutObject",
-        "s3:DeleteObject"
-      ],
-      "Resource": [
-        "arn:aws:s3:::${LOKI_CHUNKS_BUCKET}/*",
-        "arn:aws:s3:::${LOKI_RULER_BUCKET}/*"
-      ]
-    }
-  ]
-}
-EOF
-
-aws iam create-policy \
-  --policy-name StudentLokiS3Policy \
-  --policy-document file:///tmp/student-loki-s3-policy.json 2>/dev/null || true
-
-```
 
 #### Step 6: Create the logging namespace & ServiceAccount
 

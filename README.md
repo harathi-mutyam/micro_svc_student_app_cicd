@@ -435,6 +435,7 @@ Add runner-label workflow verificationAdd runner security and cleanup guidance
 #### Clone the repository:
 
 ```bash
+cd ..
 git clone https://github.com/harathi-mutyam/micro_svc_student_app_cicd.git
 cd micro_svc_student_app_cicd
 

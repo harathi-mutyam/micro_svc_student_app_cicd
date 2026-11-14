@@ -715,8 +715,8 @@ helm repo update
 # Verify:
 
 helm repo list
-```bash
 
+```
 You should see ingress-nginx in the repository list.
 
 2. Install Ingress-NGINX controller
@@ -725,7 +725,6 @@ You should see ingress-nginx in the repository list.
 
 helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx --namespace ingress-nginx --create-namespace --set controller.service.type=LoadBalancer
 ```
-
 Verify installation:
 
 ```bash

@@ -14,7 +14,7 @@ metadata:
   name: students
   namespace: student-app
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels: {app: students}
   template:

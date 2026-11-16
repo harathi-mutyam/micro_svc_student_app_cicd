@@ -1,12 +1,12 @@
 # AWS Region
-aws_region = "us-east-1"
+aws_region = "eu-north-1"
 
 # EKS Cluster
 cluster_name       = "student-cluster"
 kubernetes_version = "1.34"
 
 # EC2 Public IP for administrative access
-admin_cidr = "54.85.207.170/32"
+admin_cidr = "13.60.99.30/32"
 
 # EKS Worker Nodes (example values)
 node_instance_type = "c7i-flex.large"

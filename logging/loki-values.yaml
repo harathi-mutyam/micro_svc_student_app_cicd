@@ -16,10 +16,10 @@ loki:
   storage:
     type: s3
     bucketNames:
-      chunks: student-loki-chunks-263860684319-us-east-1
-      ruler: student-loki-ruler-263860684319-us-east-1
+      chunks: student-loki-chunks-263860684319-eu-north-1
+      ruler: student-loki-ruler-263860684319-eu-north-1
     s3:
-      region: us-east-1
+      region: eu-north-1
       insecure: false
 
 serviceAccount:

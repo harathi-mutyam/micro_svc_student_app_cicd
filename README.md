@@ -1372,13 +1372,75 @@ echo "Chunks Bucket: $LOKI_CHUNKS_BUCKET"
 echo "Ruler Bucket: $LOKI_RULER_BUCKET"
 
 ```
-
-##### Step 3: Create the S3 buckets
+##### The Loki configuration was updated to use the correct S3 bucket names and AWS region in logging/loki-values.yaml
 
 ```bash
+loki:
+  storage:
+    type: s3
+    bucketNames:
+      chunks: student-loki-chunks-ACCOUNT_ID-AWS_REGION
+      ruler: student-loki-ruler-ACCOUNT_ID-AWS_REGION
+    s3:
+      region: AWS_REGION
+      insecure: false
+
+```
+   **or using this command**
+
+```bash
+sed -i \
+  -e 's/student-loki-chunks-263860684319-us-east-1/student-loki-chunks-263860684319-eu-north-1/g' \
+  -e 's/student-loki-ruler-263860684319-us-east-1/student-loki-ruler-263860684319-eu-north-1/g' \
+  -e 's/region: us-east-1/region: eu-north-1/g' \
+  logging/loki-values.yaml
+
+```
+
+
+
+##### Step 3:Create S3 buckets with region-aware handling
+
+```bash
+# old code
+
+
 aws s3api create-bucket --bucket "$LOKI_CHUNKS_BUCKET" --region "$AWS_REGION"
 aws s3api create-bucket --bucket "$LOKI_RULER_BUCKET" --region "$AWS_REGION"
+```
 
+**or**
+
+```bash
+create_s3_bucket() {
+  local BUCKET="$1"
+
+  if aws s3api head-bucket \
+    --bucket "$BUCKET" 2>/dev/null; then
+    echo "Bucket already exists and is accessible: $BUCKET"
+    return 0
+  fi
+
+  if [ "$AWS_REGION" = "us-east-1" ]; then
+    aws s3api create-bucket \
+      --bucket "$BUCKET" \
+      --region "$AWS_REGION"
+  else
+    aws s3api create-bucket \
+      --bucket "$BUCKET" \
+      --region "$AWS_REGION" \
+      --create-bucket-configuration \
+      "LocationConstraint=$AWS_REGION"
+  fi
+}
+
+create_s3_bucket "$LOKI_CHUNKS_BUCKET"
+create_s3_bucket "$LOKI_RULER_BUCKET"
+```
+
+### Enable S3 security settings
+
+```bash
 for BUCKET in "$LOKI_CHUNKS_BUCKET" "$LOKI_RULER_BUCKET"; do
   aws s3api put-public-access-block \
     --bucket "$BUCKET" \
@@ -1391,11 +1453,12 @@ for BUCKET in "$LOKI_CHUNKS_BUCKET" "$LOKI_RULER_BUCKET"; do
     '{"Rules":[{"ApplyServerSideEncryptionByDefault":{"SSEAlgorithm":"AES256"}}]}'
 Done
 
-
 ```
+
 ```bash
 aws s3 ls | grep student-loki
 ```
+
 
 #### step 4: Install eksctl & Configure IAM Roles for Service Accounts (IRSA)
 
@@ -1482,6 +1545,27 @@ helm repo add grafana-community \
 
 ```bash
 helm repo update
+```
+
+
+#### Step: Configure Loki values for the selected region
+
+The following values must match the bucket names created above:
+```bash
+vim logging/loki-values.yaml
+
+loki:
+  storage:
+    type: s3
+    bucketNames:
+      chunks: student-loki-chunks-ACCOUNT_ID-AWS_REGION   # Replace with account id and AWS Region where your cluster created
+      ruler: student-loki-ruler-ACCOUNT_ID-AWS_REGION     # Replace with account id and AWS Region where your cluster created
+    s3:
+      region: AWS_REGION    ## Replace with AWS Region where your cluster created
+      insecure: false
+
+Replace ACCOUNT_ID and AWS_REGION with the actual values
+
 ```
 
 **Check logging/loki-values.yaml**

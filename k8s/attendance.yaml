@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: attendance
-          image: harathi2026/student-attendance:2c70de170ea9075958aa0f5917cf51ee1e357fa3
+          image: harathi2026/student-attendance:6342065009ec2cd981f4c7a88b7abb57c2932cfd
           ports:
             - {containerPort: 8000}
           env:

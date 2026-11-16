@@ -1,0 +1,15 @@
+title = "Student App Gitleaks Configuration"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Allow only the known Docker image SHA tag false positive"
+condition = "AND"
+paths = [
+    '''^k8s/auth\.yaml$'''
+]
+regexTarget = "line"
+regexes = [
+    '''^\s*image:\s*harathi2026/student-auth:[0-9a-f]{40}\s*$'''
+]

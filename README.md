@@ -1442,6 +1442,8 @@ create_s3_bucket "$LOKI_RULER_BUCKET"
 
 ```bash
 for BUCKET in "$LOKI_CHUNKS_BUCKET" "$LOKI_RULER_BUCKET"; do
+echo "Configuring bucket: $BUCKET"
+
   aws s3api put-public-access-block \
     --bucket "$BUCKET" \
     --public-access-block-configuration \

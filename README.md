@@ -1679,7 +1679,9 @@ Navigate to Explore -->select **Loki** -->select **Code mode**(switch to code mo
 **MySQL Database Logs:**
 
 ```bash
-{namespace="student-app", app="database"}
+{namespace="student-app", pod="database-0", container="mysql"}   time must be last 6 hours back
+
+
 ```
 
 **Search for errors:**

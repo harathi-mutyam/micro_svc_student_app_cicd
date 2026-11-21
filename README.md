@@ -1566,7 +1566,15 @@ loki:
       region: AWS_REGION    ## Replace with AWS Region where your cluster created
       insecure: false
 
-Replace ACCOUNT_ID and AWS_REGION with the actual values
+Replace ACCOUNT_ID and AWS_REGION with the actual values .If you changed push those changes to github Repository
+
+git add logging/loki-values.yaml
+git commit -m "Configure Loki S3 backend in loki-values.yaml file"
+git pull --rebase origin main
+git push origin main
+git status
+
+
 
 ```
 

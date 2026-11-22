@@ -2092,3 +2092,32 @@ exit
 ### Step 9: Terminate ec2 instance in aws console
 
 Open Ec2 instance in aws console select ec2 instance terminate it
+
+
+
+# Slides and images prepared for presentation purposes
+
+<img width="800" height="450" alt="image" src="https://github.com/user-attachments/assets/4d1e06a5-dc5b-487d-b530-ede4d209f1e4" />
+
+<img width="1998" height="1125" alt="image" src="https://github.com/user-attachments/assets/73d1ee47-26ba-48be-9748-a972a343ecf4" />
+
+<img width="1998" height="1125" alt="image" src="https://github.com/user-attachments/assets/a92e1043-6b59-4c5a-adf6-02560581aceb" />
+
+<img width="1998" height="1125" alt="image" src="https://github.com/user-attachments/assets/e3808181-6b25-4496-aa9b-d40bd5904ce8" />
+
+<img width="1998" height="1125" alt="image" src="https://github.com/user-attachments/assets/8a6b61cf-2a02-4540-b153-e3ab805df2f6" />
+
+<img width="2000" height="1125" alt="image" src="https://github.com/user-attachments/assets/4e21aab7-e4ac-43b5-ab18-486ccabe09e6" />
+
+<img width="1999" height="1125" alt="image" src="https://github.com/user-attachments/assets/6255da4f-0dc3-4862-985f-90cec4823bc3" />
+
+<img width="2000" height="1125" alt="image" src="https://github.com/user-attachments/assets/63758185-2259-40e0-8a69-284407ea0184" />
+
+
+
+
+
+
+
+
+

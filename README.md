@@ -5,7 +5,7 @@
 
 
 
-<img width="1669" height="942" alt="End-to-End Infrastructure and CI_CD Flow" src="https://github.com/user-attachments/assets/6754d31c-e78c-4582-b7c3-076879f7ef3c" />
+<img width="1994" height="1125" alt="image" src="https://github.com/user-attachments/assets/ff53badd-5d53-4b7d-af45-52037e18ffd8" />
 
 
 <img width="1671" height="941" alt="Student Microservices on Amazon EKS (1)" src="https://github.com/user-attachments/assets/45393ddf-5a6d-4716-a38a-0e78e4172b0d" />

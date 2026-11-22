@@ -797,6 +797,9 @@ Click on login
 
 ## Phase 4 --- Argo CD GitOps deployment
 
+<img width="2000" height="1125" alt="image" src="https://github.com/user-attachments/assets/552dd09f-e15a-4139-97a8-b6967e683bd4" />
+
+
 ### Step 1: Install and Configure Argo CD
 
 open first server gitbash terminal:
@@ -888,6 +891,9 @@ Look for SYNC STATUS: Synced and HEALTH STATUS: Healthy.
 Open argo dashboard in browser and check there also.
 
 ## Phase 5 --- Prometheus and Grafana Monitoring Student Microservices on Amazon EKS
+
+<img width="2000" height="1125" alt="image" src="https://github.com/user-attachments/assets/59c73ca0-3a5b-43dd-9c12-3ce19f6cbcc2" />
+
 
 **Check memore space**
 
@@ -1345,6 +1351,12 @@ Open Grafana Dashboard in browser **http://<YOUR_EC2_PUBLIC_IP>:3000**
 
 ## Phase 6: Loki (logging S3 Backend via IRSA) and Grafana Alloy
 
+<img width="2000" height="1125" alt="image" src="https://github.com/user-attachments/assets/0a2e5dcd-4988-43ce-98e9-297ed59bebbb" />
+
+
+<img width="800" height="450" alt="image" src="https://github.com/user-attachments/assets/feeac498-b9d8-43ea-a256-7ecfe45ce22b" />
+
+
 Open server gitbash terminal
 
 #### Step 1: Check Node Resources & Add Helm Repository
@@ -1776,6 +1788,9 @@ aws s3 ls "s3://${LOKI_CHUNKS_BUCKET}/" --recursive --summarize
 
 ## Phase 8: Alertmanager Setup & Student App Alerting Rules
 
+<img width="2000" height="1125" alt="image" src="https://github.com/user-attachments/assets/31aac01e-41e5-4574-8206-043ba9cd5a39" />
+
+
 ### Step 1: Verify Alertmanager Is Running
 
 ```bash
@@ -1887,6 +1902,7 @@ kubectl port-forward -n monitoring \
 ```
 
 ### Step 6:Access Alert manager in browser
+
 
 Open Alertmanager in Your Browser
 

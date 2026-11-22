@@ -2,6 +2,7 @@
 
 > **End-to-end guide:** EC2 preparation → Terraform EKS provisioning → CI/CD and Docker Hub → microservices deployment → Argo CD GitOps → Prometheus/Grafana monitoring → Loki/Alloy logging → Alertmanager → complete cleanup.
 
+<img width="2000" height="1151" alt="image" src="https://github.com/user-attachments/assets/16dcf73e-9545-4f72-9b6e-48b4e4018229" />
 
 
 

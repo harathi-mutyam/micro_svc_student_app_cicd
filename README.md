@@ -25,6 +25,12 @@
 8. [Phase 8 – Alertmanager and Alert Rules](#phase-8-alertmanager-setup--student-app-alerting-rules)
 9. [Phase 9 – Complete Cleanup](#phase-9clean-up-procedure)
 
+### Tools and Technologies used
+
+
+<img width="1536" height="1024" alt="file_000000004040820abf84be5750fe3ab3" src="https://github.com/user-attachments/assets/e95ea060-811e-471c-b269-4ef80ae42261" />
+
+
 ## Before You Begin
 
 - An AWS account with permissions to create EC2, IAM, VPC, EKS and S3 resources.
